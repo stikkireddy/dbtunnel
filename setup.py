@@ -30,7 +30,7 @@ setup(
         ],
         "nicegui": [
             # Specify dependencies for building documentation here
-            "gradio",
+            "nicegui",
         ],
     },
     classifiers=[
