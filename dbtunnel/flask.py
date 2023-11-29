@@ -22,8 +22,7 @@ class FlaskAppTunnel(DbTunnel):
         import nest_asyncio
         nest_asyncio.apply()
         async def start():
-            self._flask_app.config['APPLICATION_ROOT'] = self._proxy_settings.url_base_path.rstrip("/")
-            await self._flask_app.run()
+            await self._flask_app.run(host="0.0.0.0", port=self._port, url_prefix=self._proxy_settings.url_base_path)
 
         # Run the asyncio event loop instead of uvloop to enable re entrance
         import asyncio
