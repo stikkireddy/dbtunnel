@@ -12,7 +12,6 @@ class StableDiffusionUITunnel(DbTunnel):
 
     def _imports(self):
         try:
-            import streamlit
             import nest_asyncio
         except ImportError as e:
             print("ImportError: Make sure you have nest_asyncio, streamlit installed. \n"
