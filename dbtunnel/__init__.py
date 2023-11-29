@@ -1,3 +1,4 @@
+from dbtunnel.bokeh import BokehTunnel
 from dbtunnel.fastapi import FastApiAppTunnel
 from dbtunnel.gradio import GradioAppTunnel
 from dbtunnel.nicegui import NiceGuiAppTunnel
@@ -27,6 +28,10 @@ class AppTunnels:
     def stable_diffusion_ui(no_gpu: bool, port: int = 7860):
         # todo auto detect with torch
         return StableDiffusionUITunnel(no_gpu, port)
+
+    @staticmethod
+    def bokeh(path, port: int = 8080):
+        return BokehTunnel(path, port)
 
 
 dbtunnel = AppTunnels()

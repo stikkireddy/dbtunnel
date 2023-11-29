@@ -26,7 +26,6 @@ class StreamlitTunnel(DbTunnel):
         print("Starting server...", flush=True)
         import nest_asyncio
         nest_asyncio.apply()
-        streamlit_patch_websockets_v2()
         print(f"Use this link: \n{self._proxy_settings.proxy_url}")
         with process_file(self._script_path) as file_path:
             self.run_streamlit(file_path, self._port)

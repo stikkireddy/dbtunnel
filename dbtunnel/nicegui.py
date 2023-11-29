@@ -15,8 +15,8 @@ class NiceGuiAppTunnel(DbTunnel):
             import nicegui
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have fastapi, nest_asyncio uvicorn, gradio installed. \n"
-                  "pip install fastapi nest_asyncio uvicorn gradio")
+            print("ImportError: Make sure you have fastapi, nest_asyncio uvicorn, nicegui installed. \n"
+                  "pip install fastapi nest_asyncio uvicorn nicegui")
             raise e
 
     def _run(self):
