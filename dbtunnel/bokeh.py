@@ -43,6 +43,10 @@ class BokehTunnel(DbTunnel):
                "serve",
                "--show",
                path,
+               "--address",
+               "0.0.0.0",
+               "--port",
+               port,
                "--prefix",
                server_path_prefix]
         print(f"Running command: {' '.join(cmd)}")
