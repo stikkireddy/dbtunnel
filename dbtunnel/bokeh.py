@@ -37,7 +37,7 @@ class BokehTunnel(DbTunnel):
         my_env = os.environ.copy()
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
 
-        print(f"Deploying streamlit app at path: {path} on port: {port}")
+        print(f"Deploying {self._flavor} app at path: {path} on port: {port}")
         server_path_prefix = self._proxy_settings.url_base_path.rstrip('/').lstrip('/')
         cmd = ["bokeh",
                "serve",
@@ -46,7 +46,7 @@ class BokehTunnel(DbTunnel):
                "--address",
                "0.0.0.0",
                "--port",
-               port,
+               str(port),
                "--prefix",
                server_path_prefix]
         print(f"Running command: {' '.join(cmd)}")
