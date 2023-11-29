@@ -11,7 +11,6 @@ setup(
     url="https://github.com/stikkireddy/dbtunnel",
     packages=find_packages(),
     install_requires=[
-        # Specify your main dependencies here
         "nest_asyncio",
     ],
     extras_require={
