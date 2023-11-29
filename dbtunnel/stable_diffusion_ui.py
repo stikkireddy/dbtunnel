@@ -1,0 +1,60 @@
+import tempfile
+
+from dbtunnel import DbTunnel, execute
+
+
+class StableDiffusionUITunnel(DbTunnel):
+
+    def __init__(self, no_gpu: bool, port: int):
+        super().__init__(port, "stable-diffusion-ui")
+        self._no_gpu = no_gpu
+
+    def _imports(self):
+        try:
+            import streamlit
+            import nest_asyncio
+        except ImportError as e:
+            print("ImportError: Make sure you have nest_asyncio, streamlit installed. \n"
+                  "pip install nest_asyncio streamlit")
+            raise e
+
+    def _display_url(self):
+        # must end with a "/" for it to not redirect
+        return f'<a href="{self._proxy_settings.proxy_url}">Click to go to {self._flavor} App!</a>'
+
+    def _run(self):
+        self.display()
+        print("Starting server...", flush=True)
+        import nest_asyncio
+        import requests
+        import os
+        nest_asyncio.apply()
+        script_url = "https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh"
+
+        # Download the script
+        response = requests.get(script_url)
+        script_content = response.text
+
+        # Create a temporary file to save the script
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as script_file:
+            script_file.write(script_content)
+            script_path = script_file.name
+
+        # Set environment variable
+        if self._no_gpu:
+            os.environ["COMMANDLINE_ARGS"] = (
+                f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')} --skip"
+                f"-torch-cuda-test")
+        else:
+            os.environ["COMMANDLINE_ARGS"] = f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')}"
+
+        import os
+        import subprocess
+        my_env = os.environ.copy()
+        subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
+
+        print(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
+        cmd = ["bash", script_path, "-f", "--listen"]
+        print(f"Running command: {' '.join(cmd)}")
+        for path in execute(cmd, my_env):
+            print(path, end="")
