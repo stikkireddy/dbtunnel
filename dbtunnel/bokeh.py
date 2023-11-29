@@ -43,8 +43,6 @@ class BokehTunnel(DbTunnel):
                "serve",
                "--show",
                path,
-               "--address",
-               "0.0.0.0",
                "--port",
                str(port),
                "--prefix",
