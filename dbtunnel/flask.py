@@ -20,6 +20,7 @@ class FlaskAppTunnel(DbTunnel):
         self.display()
         print("Starting server...", flush=True)
 
+        nest_asyncio.apply()
         async def start():
             self._flask_app.config['APPLICATION_ROOT'] = self._proxy_settings.url_base_path.rstrip("/")
             await self._flask_app.run()
