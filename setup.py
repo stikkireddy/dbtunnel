@@ -33,7 +33,10 @@ setup(
         ],
         "bokeh": [
             "bokeh",
-        ]
+        ],
+        "flask": [
+            "flask",
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",
