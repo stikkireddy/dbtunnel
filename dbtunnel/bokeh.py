@@ -45,8 +45,9 @@ class BokehTunnel(DbTunnel):
                path,
                "--port",
                str(port),
-               "--prefix",
-               server_path_prefix]
+               # "--prefix",
+               # server_path_prefix
+               ]
         print(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
             print(path, end="")
