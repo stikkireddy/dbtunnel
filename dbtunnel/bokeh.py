@@ -37,7 +37,7 @@ class BokehTunnel(DbTunnel):
         my_env = os.environ.copy()
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
         # static assets otherwise get served by root and the root path is not allowed!
-        os.environ["BOKEH_RESOURCES"] = "cdn"
+        my_env["BOKEH_RESOURCES"] = "cdn"
         print(f"Deploying {self._flavor} app at path: {path} on port: {port}")
         server_path_prefix = self._proxy_settings.url_base_path.rstrip('/').lstrip('/')
         cmd = ["bokeh",
