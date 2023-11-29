@@ -1,5 +1,6 @@
 from dbtunnel.bokeh import BokehTunnel
 from dbtunnel.fastapi import FastApiAppTunnel
+from dbtunnel.flask import FlaskAppTunnel
 from dbtunnel.gradio import GradioAppTunnel
 from dbtunnel.nicegui import NiceGuiAppTunnel
 from dbtunnel.stable_diffusion_ui import StableDiffusionUITunnel
@@ -32,6 +33,10 @@ class AppTunnels:
     @staticmethod
     def bokeh(path, port: int = 8080):
         return BokehTunnel(path, port)
+
+    @staticmethod
+    def flask(app, port: int = 8080):
+        return FlaskAppTunnel(app, port)
 
 
 dbtunnel = AppTunnels()

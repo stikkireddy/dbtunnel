@@ -47,7 +47,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     )
 
 
-Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh"]
+Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask"]
 
 
 class DbTunnel(abc.ABC):
