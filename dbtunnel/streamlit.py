@@ -1,4 +1,5 @@
-from dbtunnel import DbTunnel, process_file, execute
+from dbtunnel.tunnels import DbTunnel
+from dbtunnel.utils import process_file, execute
 
 
 class StreamlitTunnel(DbTunnel):

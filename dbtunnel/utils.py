@@ -1,0 +1,34 @@
+import os
+import shutil
+import tempfile
+from contextlib import contextmanager
+
+
+@contextmanager
+def process_file(input_path):
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Create a temporary directory
+
+        # Build the destination path in the temporary directory
+        temp_file_path = os.path.join(temp_dir, os.path.basename(input_path))
+
+        # Copy the file to the temporary directory
+        shutil.copy(input_path, temp_file_path)
+
+        # Yield the temporary file path to the caller
+        yield temp_file_path
+    finally:
+        # Cleanup: Remove the temporary directory and its contents
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+def execute(cmd, env):
+    import subprocess
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env)
+    for stdout_line in iter(popen.stdout.readline, ""):
+        yield stdout_line
+    popen.stdout.close()
+    return_code = popen.wait()
+    if return_code:
+        raise subprocess.CalledProcessError(return_code, cmd)

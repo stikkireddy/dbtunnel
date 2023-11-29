@@ -1,4 +1,4 @@
-from dbtunnel import DbTunnel
+from dbtunnel.tunnels import DbTunnel
 
 
 class NiceGuiAppTunnel(DbTunnel):

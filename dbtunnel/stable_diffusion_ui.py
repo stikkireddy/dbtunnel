@@ -1,6 +1,7 @@
 import tempfile
 
-from dbtunnel import DbTunnel, execute
+from dbtunnel.tunnels import DbTunnel
+from dbtunnel.utils import execute
 
 
 class StableDiffusionUITunnel(DbTunnel):
