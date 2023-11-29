@@ -1,6 +1,5 @@
 from setuptools import setup, find_packages
 
-
 setup(
     name="dbtunnel",
     version="0.1.0",
@@ -32,6 +31,9 @@ setup(
             # Specify dependencies for building documentation here
             "nicegui",
         ],
+        "bokeh": [
+            "bokeh",
+        ]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
