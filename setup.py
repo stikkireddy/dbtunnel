@@ -41,7 +41,7 @@ setup(
         "dash": [
             "dash",
             "fastapi",
-            "uvicorn[standard]"
+            "uvicorn" # no websockets
         ]
     },
     classifiers=[
