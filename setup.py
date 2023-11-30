@@ -39,7 +39,9 @@ setup(
             "flask",
         ],
         "dash": [
-            "dash"
+            "dash",
+            "fastapi",
+            "uvicorn",
         ]
     },
     classifiers=[
