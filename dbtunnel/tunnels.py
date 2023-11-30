@@ -48,7 +48,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     )
 
 
-Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask"]
+Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash"]
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
 def get_repl_context() -> Any:
@@ -94,7 +94,7 @@ class DbTunnel(abc.ABC):
     def _display_url(self):
         pass
 
-    def with_auth(self, host: str = None, token: str = None):
+    def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
             print("Setting databricks host and token from context")
             os.environ["DATABRICKS_HOST"] = host or get_repl_context().browserHostName
@@ -104,7 +104,7 @@ class DbTunnel(abc.ABC):
 
         return self
 
-    def with_env(self, **kwargs):
+    def inject_env(self, **kwargs):
         for k, v in kwargs.items():
             if type(v) != str:
                 raise ValueError(f"Value for environment variable {k} must be a string")

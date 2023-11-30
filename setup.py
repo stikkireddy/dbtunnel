@@ -38,6 +38,9 @@ setup(
         "flask": [
             "flask",
         ],
+        "dash": [
+            "dash"
+        ]
     },
     classifiers=[
         "Programming Language :: Python :: 3",

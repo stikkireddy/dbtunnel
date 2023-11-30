@@ -1,4 +1,5 @@
 from dbtunnel.bokeh import BokehTunnel
+from dbtunnel.dash import DashAppTunnel
 from dbtunnel.fastapi import FastApiAppTunnel
 from dbtunnel.flask import FlaskAppTunnel
 from dbtunnel.gradio import GradioAppTunnel
@@ -38,6 +39,10 @@ class AppTunnels:
     @staticmethod
     def flask(app, port: int = 8080):
         return FlaskAppTunnel(app, port)
+
+    @staticmethod
+    def dash(app, port: int = 8080):
+        return DashAppTunnel(app, port)
 
 
 dbtunnel = AppTunnels()
