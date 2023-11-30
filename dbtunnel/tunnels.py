@@ -1,7 +1,13 @@
 import abc
 import json
+import os
+import secrets
+import string
+import subprocess
 from dataclasses import dataclass
 from typing import Dict, Any, Literal
+
+from dbtunnel.utils import run_secrets_proxy
 
 
 @dataclass
@@ -77,6 +83,26 @@ class DbTunnel(abc.ABC):
     @abc.abstractmethod
     def _display_url(self):
         pass
+
+    def with_secrets_proxy(self, port: int=9898,
+                       env_mode_var="DBTUNNEL_MODE",
+                       secret_env_key="DBTUNNEL_CLIENT_SECRET",
+                       client_conn_env_key="DBTUNNEL_CLIENT_CONN",
+                       client_header_env_key="DBTUNNEL_CLIENT_HEADER",
+                       client_header_key= "X-API-DBTUNNELTOKEN"
+                       ):
+        # ensure imports
+        self._imports()
+        subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
+        random_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(24))
+        client_conn = f"http://0.0.0.0:{port}/secret"
+        run_secrets_proxy(random_token, port, client_header_key)
+        os.environ[secret_env_key] = random_token
+        os.environ[client_conn_env_key] = client_conn
+        os.environ[client_header_env_key] = client_header_key
+        os.environ[env_mode_var] = "true"
+        return self
+
 
     def run(self):
         self._imports()
