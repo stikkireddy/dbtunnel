@@ -41,7 +41,7 @@ setup(
         "dash": [
             "dash",
             "fastapi",
-            "uvicorn",
+            "uvicorn[standard]"
         ]
     },
     classifiers=[
