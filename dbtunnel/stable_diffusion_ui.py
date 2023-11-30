@@ -6,9 +6,11 @@ from dbtunnel.utils import execute
 
 class StableDiffusionUITunnel(DbTunnel):
 
-    def __init__(self, no_gpu: bool, port: int):
+    def __init__(self, no_gpu: bool, port: int, enable_insecure_extensions: bool, extra_flags: str):
         super().__init__(port, "stable-diffusion-ui")
         self._no_gpu = no_gpu
+        self._enable_insecure_extensions = enable_insecure_extensions
+        self._extra_flags = extra_flags
 
     def _imports(self):
         try:
@@ -47,6 +49,12 @@ class StableDiffusionUITunnel(DbTunnel):
                 f"-torch-cuda-test")
         else:
             os.environ["COMMANDLINE_ARGS"] = f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')}"
+
+        if self._enable_insecure_extensions:
+            os.environ["COMMANDLINE_ARGS"] += " --enable-insecure-extensions"
+
+        if len(self._extra_flags) > 0:
+            os.environ["COMMANDLINE_ARGS"] += f" {self._extra_flags}"
 
         import os
         import subprocess

@@ -26,9 +26,10 @@ class AppTunnels:
         return StreamlitTunnel(path, port)
 
     @staticmethod
-    def stable_diffusion_ui(no_gpu: bool, port: int = 7860):
+    def stable_diffusion_ui(no_gpu: bool, port: int = 7860, enable_insecure_extensions: bool = False,
+                            extra_flags: str = ""):
         # todo auto detect with torch
-        return StableDiffusionUITunnel(no_gpu, port)
+        return StableDiffusionUITunnel(no_gpu, port, enable_insecure_extensions, extra_flags)
 
     @staticmethod
     def bokeh(path, port: int = 8080):
