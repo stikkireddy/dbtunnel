@@ -30,7 +30,6 @@ class BokehTunnel(DbTunnel):
         with process_file(self._script_path) as file_path:
             self.run_bokeh(file_path, self._port)
 
-
     def run_bokeh(self, path, port):
         import os
         import subprocess

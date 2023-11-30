@@ -11,8 +11,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "nest_asyncio",
-        "fastapi",
-        "uvicorn",
+        "databricks-sdk>=0.14.0",
     ],
     extras_require={
         "fastapi": [

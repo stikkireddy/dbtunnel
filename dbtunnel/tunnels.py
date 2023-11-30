@@ -1,14 +1,8 @@
 import abc
-import asyncio
 import json
 import os
-import secrets
-import string
-import time
 from dataclasses import dataclass
 from typing import Dict, Any, Literal
-
-from dbtunnel.utils import run_secrets_proxy
 
 
 @dataclass
@@ -56,6 +50,20 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask"]
 
+# from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
+def get_repl_context() -> Any:
+    """Gets the notebook REPL context if running inside a Databricks notebook.
+    Returns None otherwise.
+    """
+    try:
+        from dbruntime.databricks_repl_context import get_context
+
+        return get_context()
+    except ImportError:
+        raise ImportError(
+            "Cannot access dbruntime, not running inside a Databricks notebook."
+        )
+
 
 class DbTunnel(abc.ABC):
 
@@ -86,37 +94,21 @@ class DbTunnel(abc.ABC):
     def _display_url(self):
         pass
 
-    def with_secrets_proxy(self, port: int = 9898,
-                           env_mode_var="DBTUNNEL_MODE",
-                           secret_env_key="DBTUNNEL_CLIENT_SECRET",
-                           client_conn_env_key="DBTUNNEL_CLIENT_CONN",
-                           client_header_env_key="DBTUNNEL_CLIENT_HEADER",
-                           client_header_key="X-API-DBTUNNELTOKEN"
-                           ):
-        # ensure imports
-        self._imports()
+    def with_auth(self, host: str = None, token: str = None):
+        if os.getenv("DATABRICKS_HOST") is None:
+            print("Setting databricks host and token from context")
+            os.environ["DATABRICKS_HOST"] = host or get_repl_context().browserHostName
+        if os.getenv("DATABRICKS_TOKEN") is None:
+            print("Setting databricks host and token from context")
+            os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
 
-        if self._loop is None:
-            self._loop = asyncio.new_event_loop()
-        else:
-            try:
-                self._loop.stop()
-                time.sleep(3)
-            except RuntimeError:
-                print("Attempting to close existing event loop")
-            finally:
-                self._loop.close()
-                self._loop = asyncio.new_event_loop()
+        return self
 
-
-        # subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
-        random_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(24))
-        client_conn = f"http://0.0.0.0:{port}/secret"
-        run_secrets_proxy(self._loop, random_token, port, client_header_key)
-        os.environ[secret_env_key] = random_token
-        os.environ[client_conn_env_key] = client_conn
-        os.environ[client_header_env_key] = client_header_key
-        os.environ[env_mode_var] = "true"
+    def with_env(self, **kwargs):
+        for k, v in kwargs.items():
+            if type(v) != str:
+                raise ValueError(f"Value for environment variable {k} must be a string")
+            os.environ[k] = v
         return self
 
     def run(self):
