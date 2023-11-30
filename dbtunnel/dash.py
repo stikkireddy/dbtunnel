@@ -25,6 +25,10 @@ class DashAppTunnel(DbTunnel):
         import uvicorn
         from fastapi.middleware.wsgi import WSGIMiddleware
         app = FastAPI(root_path=self._proxy_settings.url_base_path.rstrip("/"))
+        self._dash_app.config.update({
+            'routes_pathname_prefix': self._proxy_settings.url_base_path,
+            'requests_pathname_prefix': self._proxy_settings.url_base_path
+        })
         app.mount("/", WSGIMiddleware(self._dash_app.server))
         import nest_asyncio
         nest_asyncio.apply()
