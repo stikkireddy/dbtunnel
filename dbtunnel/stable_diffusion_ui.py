@@ -51,7 +51,7 @@ class StableDiffusionUITunnel(DbTunnel):
             os.environ["COMMANDLINE_ARGS"] = f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')}"
 
         if self._enable_insecure_extensions:
-            os.environ["COMMANDLINE_ARGS"] += " --enable-insecure-extensions"
+            os.environ["COMMANDLINE_ARGS"] += " --enable-insecure-extension-access"
 
         if len(self._extra_flags) > 0:
             os.environ["COMMANDLINE_ARGS"] += f" {self._extra_flags}"
