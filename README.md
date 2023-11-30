@@ -1,4 +1,6 @@
-# dbtunnel
+# dbtunnel 
+
+Proxy solution to run elegant Web UIs natively inside databricks notebooks.
 
 ## Description
 
