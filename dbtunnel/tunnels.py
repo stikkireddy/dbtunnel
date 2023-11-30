@@ -4,7 +4,7 @@ import json
 import os
 import secrets
 import string
-import subprocess
+import time
 from dataclasses import dataclass
 from typing import Dict, Any, Literal
 
@@ -101,6 +101,7 @@ class DbTunnel(abc.ABC):
         else:
             try:
                 self._loop.stop()
+                time.sleep(3)
             except RuntimeError:
                 print("Attempting to close existing event loop")
             finally:
