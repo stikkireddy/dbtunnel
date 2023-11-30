@@ -9,4 +9,6 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [x] stable diffusion webui
 * [x] streamlit
 * [x] nicegui
-* [ ] flask
+* [x] flask
+* [x] dash
+* [x] bokeh
