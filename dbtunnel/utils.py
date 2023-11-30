@@ -34,7 +34,7 @@ def execute(cmd, env):
         raise subprocess.CalledProcessError(return_code, cmd)
 
 
-def run_secrets_proxy(required_token: str, proxy_port=9898, token_key: str = "X-API-DBTUNNELTOKEN"):
+def run_secrets_proxy(loop, required_token: str, proxy_port=9898, token_key: str = "X-API-DBTUNNELTOKEN"):
     from fastapi import FastAPI
     import uvicorn
 
@@ -82,7 +82,7 @@ def run_secrets_proxy(required_token: str, proxy_port=9898, token_key: str = "X-
     # import asyncio
     # asyncio.run(start())
     import asyncio
-    loop = asyncio.new_event_loop()
+    # loop = asyncio.new_event_loop()
 
     # Define a function to run the 'start' coroutine in the background thread
     import threading

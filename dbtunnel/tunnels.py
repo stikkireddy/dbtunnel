@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import json
 import os
 import secrets
@@ -71,6 +72,7 @@ class DbTunnel(abc.ABC):
         self._cloud = get_cloud(self._context)
         self._proxy_settings = get_cloud_proxy_settings(self._cloud, self._org_id, self._cluster_id,
                                                         self._port)
+        self._loop = None
 
     @abc.abstractmethod
     def _imports(self):
@@ -84,25 +86,37 @@ class DbTunnel(abc.ABC):
     def _display_url(self):
         pass
 
-    def with_secrets_proxy(self, port: int=9898,
-                       env_mode_var="DBTUNNEL_MODE",
-                       secret_env_key="DBTUNNEL_CLIENT_SECRET",
-                       client_conn_env_key="DBTUNNEL_CLIENT_CONN",
-                       client_header_env_key="DBTUNNEL_CLIENT_HEADER",
-                       client_header_key= "X-API-DBTUNNELTOKEN"
-                       ):
+    def with_secrets_proxy(self, port: int = 9898,
+                           env_mode_var="DBTUNNEL_MODE",
+                           secret_env_key="DBTUNNEL_CLIENT_SECRET",
+                           client_conn_env_key="DBTUNNEL_CLIENT_CONN",
+                           client_header_env_key="DBTUNNEL_CLIENT_HEADER",
+                           client_header_key="X-API-DBTUNNELTOKEN"
+                           ):
         # ensure imports
         self._imports()
-        subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
+
+        if self._loop is None:
+            self._loop = asyncio.new_event_loop()
+        else:
+            try:
+                self._loop.stop()
+            except RuntimeError:
+                print("Attempting to close existing event loop")
+            finally:
+                self._loop.close()
+                self._loop = asyncio.new_event_loop()
+
+
+        # subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
         random_token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(24))
         client_conn = f"http://0.0.0.0:{port}/secret"
-        run_secrets_proxy(random_token, port, client_header_key)
+        run_secrets_proxy(self._loop, random_token, port, client_header_key)
         os.environ[secret_env_key] = random_token
         os.environ[client_conn_env_key] = client_conn
         os.environ[client_header_env_key] = client_header_key
         os.environ[env_mode_var] = "true"
         return self
-
 
     def run(self):
         self._imports()
@@ -110,5 +124,3 @@ class DbTunnel(abc.ABC):
 
     def display(self):
         self._display_html(self._display_url())
-
-
