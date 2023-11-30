@@ -25,6 +25,9 @@ class DashAppTunnel(DbTunnel):
         import uvicorn
         from fastapi.middleware.wsgi import WSGIMiddleware
         app = FastAPI(root_path=self._proxy_settings.url_base_path.rstrip("/"))
+        # DASH HACK
+        del self._dash_app.config._read_only['requests_pathname_prefix']
+        del self._dash_app.config._read_only['routes_pathname_prefix']
         self._dash_app.config.update({
             'routes_pathname_prefix': self._proxy_settings.url_base_path,
             'requests_pathname_prefix': self._proxy_settings.url_base_path
