@@ -12,7 +12,7 @@ class CodeServerTunnel(DbTunnel):
             raise ValueError("Either directory_path or repo_name must be provided.")
 
         if repo_name:
-            repo_path = f"/Workspace/repos/{get_current_username()}/{repo_name}"
+            repo_path = f"/Workspace/Repos/{get_current_username()}/{repo_name}"
             if not os.path.exists(repo_path):
                 raise ValueError(f"The provided repo_name '{repo_name}' in path: {repo_path} does not exist.")
             self._dir_path = repo_path
