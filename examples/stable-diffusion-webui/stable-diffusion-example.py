@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install "git+https://github.com/stikkireddy/dbtunnel.git"
+# MAGIC %pip install dbtunnel
 
 # COMMAND ----------
 

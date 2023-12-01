@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install "git+https://github.com/stikkireddy/dbtunnel.git#egg=dbtunnel[streamlit]"
+# MAGIC %pip install dbtunnel[streamlit]
 
 # COMMAND ----------
 
@@ -16,7 +16,7 @@ script_path = current_directory + "/streamlit_example.py"
 
 from dbtunnel import dbtunnel
 
-dbtunnel.streamlit(script_path).with_auth.run()
+dbtunnel.streamlit(script_path).run()
 
 # COMMAND ----------
 

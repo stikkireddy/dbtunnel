@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from databricks.sdk import WorkspaceClient
 
 st.title('Uber pickups in NYC')
 
@@ -20,12 +19,6 @@ def load_data(nrows):
 data_load_state = st.text('Loading data...')
 data = load_data(10000)
 data_load_state.text("Done! (using st.cache)")
-
-w = WorkspaceClient()
-
-for c in w.clusters.list():
-  data_load_state.text(f"Done! (using st.cache) and some cluster: {c.cluster_name}")
-  break
 
 if st.checkbox('Show raw data'):
     st.subheader('Raw data')

@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install "git+https://github.com/stikkireddy/dbtunnel.git#egg=dbtunnel[bokeh]"
+# MAGIC %pip install dbtunnel[bokeh]
 
 # COMMAND ----------
 
