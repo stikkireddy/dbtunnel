@@ -34,7 +34,7 @@ class SolaraAppTunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
         # static assets otherwise get served by root and the root path is not allowed!
         print(f"Deploying {self._flavor} app at path: {path} on port: {port}")
-        server_path_prefix = self._proxy_settings.url_base_path.lstrip('/')
+        server_path_prefix = self._proxy_settings.url_base_path.rstrip('/')
         cmd = [
                "solara",
                "run",
