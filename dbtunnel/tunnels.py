@@ -3,6 +3,7 @@ import json
 import os
 from dataclasses import dataclass
 from typing import Dict, Any, Literal
+from urllib.parse import urlparse
 
 
 @dataclass
@@ -50,6 +51,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash"]
 
+
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
 def get_repl_context() -> Any:
     """Gets the notebook REPL context if running inside a Databricks notebook.
@@ -63,6 +65,11 @@ def get_repl_context() -> Any:
         raise ImportError(
             "Cannot access dbruntime, not running inside a Databricks notebook."
         )
+
+
+def extract_hostname(url):
+    parsed_url = urlparse(url)
+    return parsed_url.hostname
 
 
 class DbTunnel(abc.ABC):
@@ -96,11 +103,27 @@ class DbTunnel(abc.ABC):
 
     def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
-            print("Setting databricks host and token from context")
+            print("Setting databricks host from context")
             os.environ["DATABRICKS_HOST"] = host or get_repl_context().browserHostName
         if os.getenv("DATABRICKS_TOKEN") is None:
-            print("Setting databricks host and token from context")
+            print("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
+
+        return self
+
+    def inject_sql_warehouse(self, http_path: str,  server_hostname: str = None, token: str = None):
+        if os.getenv("DATABRICKS_SERVER_HOSTNAME") is None:
+            print("Setting databricks server hostname from context")
+            os.environ["DATABRICKS_SERVER_HOSTNAME"] = server_hostname or extract_hostname(
+                get_repl_context().browserHostName)
+
+        if os.getenv("DATABRICKS_TOKEN") is None:
+            print("Setting databricks token from context")
+            os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
+
+        if os.getenv("DATABRICKS_HTTP_PATH") is None:
+            print("Setting databricks warehouse http path")
+            os.environ["DATABRICKS_HTTP_PATH"] = http_path
 
         return self
 
@@ -108,6 +131,7 @@ class DbTunnel(abc.ABC):
         for k, v in kwargs.items():
             if type(v) != str:
                 raise ValueError(f"Value for environment variable {k} must be a string")
+            print(f"Setting environment variable {k}")
             os.environ[k] = v
         return self
 

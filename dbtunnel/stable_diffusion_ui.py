@@ -13,12 +13,7 @@ class StableDiffusionUITunnel(DbTunnel):
         self._extra_flags = extra_flags
 
     def _imports(self):
-        try:
-            import nest_asyncio
-        except ImportError as e:
-            print("ImportError: Make sure you have nest_asyncio, installed. \n"
-                  "pip install nest_asyncio")
-            raise e
+        return None
 
     def _display_url(self):
         # must end with a "/" for it to not redirect
@@ -27,10 +22,8 @@ class StableDiffusionUITunnel(DbTunnel):
     def _run(self):
         self.display()
         print("Starting server...", flush=True)
-        import nest_asyncio
         import requests
         import os
-        nest_asyncio.apply()
         script_url = "https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh"
 
         # Download the script
