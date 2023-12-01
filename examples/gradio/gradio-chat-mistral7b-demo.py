@@ -82,11 +82,16 @@ print(gen_text_for_serving("How to master Python in 3 days?"))
 # COMMAND ----------
 
 import gradio as gr
+import time
 
 def respond(message, history):
-    return str(gen_text_for_serving(message))
+    computed_gen = str(gen_text_for_serving(message))
+    for i in range(len(computed_gen)):
+          time.sleep(0.05)
+          yield computed_gen[: i+1]
+    return 
 
-demo = gr.ChatInterface(fn=respond, examples=["hello what is the python language?"], title="Mistral Bot")
+demo = gr.ChatInterface(fn=respond, examples=["hello what is the python language?"], title="Mistral Bot").queue()
 
 # COMMAND ----------
 
