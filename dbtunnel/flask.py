@@ -10,19 +10,34 @@ class FlaskAppTunnel(DbTunnel):
     def _imports(self):
         try:
             import flask
+            import fastapi
+            import uvicorn
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have flask and nest_asyncio installed;"
-                  "pip install flask nest_asyncio")
+            print("ImportError: Make sure you have flask, fastapi, uvicorn and nest_asyncio installed;"
+                  "pip install flask fastapi uvicorn nest_asyncio")
             raise e
 
     def _run(self):
         self.display()
         print("Starting server...", flush=True)
+        import uvicorn
+        from fastapi import FastAPI
+        from fastapi.middleware.wsgi import WSGIMiddleware
+
+        app = FastAPI(root_path=self._proxy_settings.url_base_path.rstrip("/"))
+        app.mount("/", WSGIMiddleware(self._flask_app))
         import nest_asyncio
         nest_asyncio.apply()
+
         async def start():
-            await self._flask_app.run(host="0.0.0.0", port=self._port, url_prefix=self._proxy_settings.url_base_path)
+            config = uvicorn.Config(
+                app,
+                host="0.0.0.0",
+                port=self._port,
+            )
+            server = uvicorn.Server(config)
+            await server.serve()
 
         # Run the asyncio event loop instead of uvloop to enable re entrance
         import asyncio

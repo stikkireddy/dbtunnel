@@ -45,6 +45,8 @@ setup(
         ],
         "flask": [
             "flask",
+            "fastapi",
+            "uvicorn", # no websockets
             "nest_asyncio",
         ],
         "dash": [
