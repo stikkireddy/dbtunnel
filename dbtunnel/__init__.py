@@ -1,4 +1,5 @@
 from dbtunnel.bokeh import BokehTunnel
+from dbtunnel.code_server import CodeServerTunnel
 from dbtunnel.dash import DashAppTunnel
 from dbtunnel.fastapi import FastApiAppTunnel
 from dbtunnel.flask import FlaskAppTunnel
@@ -48,6 +49,10 @@ class AppTunnels:
     @staticmethod
     def solara(path, port: int = 8080):
         return SolaraAppTunnel(path, port)
+
+    @staticmethod
+    def code_server(directory_path: str = None, repo_name: str = None, port: int = 9988):
+        return CodeServerTunnel(directory_path, repo_name, port)
 
 
 dbtunnel = AppTunnels()

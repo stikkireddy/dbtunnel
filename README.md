@@ -2,6 +2,8 @@
 
 Proxy solution to run elegant Web UIs natively inside databricks notebooks.
 
+**YOU CAN ONLY USE THIS IN DATABRICKS NOTEBOOKS WITH A RUNNING CLUSTER**
+
 ## Description
 
 Easy way to test the following things on a databricks cluster and notebooks
@@ -17,6 +19,19 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [ ] posit
 * [ ] panel
 * [x] solara
+* [x] code-server on repos
+
+Easy way to test out llm chatbots; look in examples/gradio
+
+**You must use A10 GPU instances or higher**
+
+* [x] Mistral-7b
+* [ ] Llama-2-7b
+* [ ] mpt-7b
+* [ ] Streaming support (vllm, etc.)
+
+
+
 
 ## Setup
 

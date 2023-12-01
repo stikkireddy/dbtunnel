@@ -49,7 +49,8 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     )
 
 
-Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara"]
+Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
+"code-server"]
 
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
@@ -64,6 +65,17 @@ def get_repl_context() -> Any:
     except ImportError:
         raise ImportError(
             "Cannot access dbruntime, not running inside a Databricks notebook."
+        )
+
+
+def get_current_username() -> str:
+    try:
+        from databricks.sdk import WorkspaceClient
+        return WorkspaceClient(host=get_repl_context().browserHostName,
+                               token=get_repl_context().apiToken).current_user.me().user_name
+    except ImportError:
+        raise ImportError(
+            "Please install databricks-sdk."
         )
 
 
@@ -111,7 +123,7 @@ class DbTunnel(abc.ABC):
 
         return self
 
-    def inject_sql_warehouse(self, http_path: str,  server_hostname: str = None, token: str = None):
+    def inject_sql_warehouse(self, http_path: str, server_hostname: str = None, token: str = None):
         if os.getenv("DATABRICKS_SERVER_HOSTNAME") is None:
             print("Setting databricks server hostname from context")
             os.environ["DATABRICKS_SERVER_HOSTNAME"] = server_hostname or extract_hostname(
