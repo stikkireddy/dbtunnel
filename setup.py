@@ -57,7 +57,10 @@ setup(
         ],
         "sql": [
             "databricks-sql-connector"
-        ]
+        ],
+        "solara": [
+            "solara",
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",

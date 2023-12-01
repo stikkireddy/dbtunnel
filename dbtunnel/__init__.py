@@ -4,6 +4,7 @@ from dbtunnel.fastapi import FastApiAppTunnel
 from dbtunnel.flask import FlaskAppTunnel
 from dbtunnel.gradio import GradioAppTunnel
 from dbtunnel.nicegui import NiceGuiAppTunnel
+from dbtunnel.solara import SolaraAppTunnel
 from dbtunnel.stable_diffusion_ui import StableDiffusionUITunnel
 from dbtunnel.streamlit import StreamlitTunnel
 
@@ -43,6 +44,10 @@ class AppTunnels:
     @staticmethod
     def dash(app, port: int = 8080):
         return DashAppTunnel(app, port)
+
+    @staticmethod
+    def solara(path, port: int = 8080):
+        return SolaraAppTunnel(path, port)
 
 
 dbtunnel = AppTunnels()
