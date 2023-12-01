@@ -42,7 +42,7 @@ class SolaraAppTunnel(DbTunnel):
                "0.0.0.0",
                "--port",
                str(port),
-               "--production"
+               "--production",
                "--root-path",
                server_path_prefix,
                path,
