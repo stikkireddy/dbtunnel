@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="dbtunnel",
-    version="0.1.1",
+    version="0.1.2",
     author="Sri Tikkireddy",
     author_email="sri.tikkireddy@databricks.com",
     description="Run app and get cluster proxy url for it in databricks clusters",
@@ -50,7 +50,7 @@ setup(
         "dash": [
             "dash",
             "fastapi",
-            "uvicorn" # no websockets
+            "uvicorn", # no websockets
             "nest_asyncio",
         ],
         "sql": [
