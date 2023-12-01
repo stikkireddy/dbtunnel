@@ -14,3 +14,7 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [x] flask
 * [x] dash
 * [x] bokeh
+
+
+## Disclaimer
+dbtunnel is not developed, endorsed not supported by Databricks. It is provided as-is; no warranty is derived from using this package. For more details, please refer to the license.
