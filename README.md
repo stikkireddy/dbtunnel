@@ -16,7 +16,17 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [x] bokeh
 * [ ] posit
 * [ ] panel
-* [ ] solara
+* [x] solara
+
+## Setup
+
+**Please do not use this in production!!**
+
+1. Clone this repo into databricks repos
+2. Go to any of the examples to see how to use them
+3. Enjoy your proxy experience :-) 
+4. If you want to share the link ensure that the other user has permission to attach to your cluster.
+
 
 
 ## Disclaimer
