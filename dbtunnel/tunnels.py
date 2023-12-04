@@ -51,7 +51,8 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     )
 
 
-Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara", "code-server"]
+Flavor = Literal[
+    "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara", "code-server"]
 
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
@@ -157,14 +158,23 @@ class DbTunnel(abc.ABC):
         self._run()
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
-    def share(self, auth_token: str, mode: Literal["ngrok"] = "ngrok", kill_existing_processes: bool = True):
+    def share_to_internet_via_ngrok(self,
+                                    *,
+                                    ngrok_api_token: str,
+                                    ngrok_tunnel_auth_token: str,
+                                    kill_existing_processes: bool = True,
+                                    kill_all_tunnel_sessions: bool = False,
+                                    ):
         self._share = True
-        if mode == "ngrok":
-            if kill_existing_processes is True:
-                pkill("ngrok")
-            from dbtunnel.ngrok import NgrokTunnel
-            ngrok_tunnel = NgrokTunnel(self._port, auth_token)
-            self._share_information = ngrok_tunnel.run()
+        if kill_existing_processes is True:
+            pkill("ngrok")
+        from dbtunnel.ngrok import NgrokTunnel
+        ngrok_tunnel = NgrokTunnel(self._port,
+                                   ngrok_tunnel_auth_token,
+                                   ngrok_api_token)
+        if kill_all_tunnel_sessions is True:
+            ngrok_tunnel.kill_existing_sessions()
+        self._share_information = ngrok_tunnel.run()
         return self
 
     def display(self):

@@ -61,15 +61,29 @@ Easy way to test out llm chatbots; look in examples/gradio
 The reason for doing this is to test something with a friend or colleague who is not logged in into databricks.
 The proxy option requires you to be logged in into databricks.
 
-1. Go to [ngrok](https://ngrok.com/) and create an account and get an api token
+1. Go to [ngrok](https://ngrok.com/) and create an account and get an api token and a tunnel auth token
+    * You can get a tunnel token from [here](https://dashboard.ngrok.com/get-started/your-authtoken).
+    * You can get an api token from [here](https://dashboard.ngrok.com/api).
 2. Go to a databricks notebook:
+3. **If you are using free tier of ngrok you can only have one tunnel and one session at a time so enable `kill_all_tunnel_sessions=True`** 
+
 ```python
 from dbtunnel import dbtunnel
 
 # again this example is with streamlit but works with any framework
-dbtunnel.streamlit("<script path>").share("<ngrok-token>").run()
-```
+dbtunnel.streamlit("<script_path>").share_to_internet_via_ngrok(
+    ngrok_api_token="<ngrok api token>",
+    ngrok_tunnel_auth_token="<ngrok tunnel auth token>"
+).run()
 
+# if you need to kill tunnels because you are on free tier:
+# again this example is with streamlit but works with any framework
+dbtunnel.streamlit("<script_path>").share_to_internet_via_ngrok(
+    ngrok_api_token="<ngrok api token>",
+    ngrok_tunnel_auth_token="<ngrok tunnel auth token>",
+    kill_all_tunnel_sessions=True,
+).run()
+```
 
 
 ## Disclaimer
