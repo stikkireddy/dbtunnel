@@ -1,7 +1,9 @@
 import os
 import shutil
+import subprocess
 import tempfile
 from contextlib import contextmanager
+from typing import List
 
 
 @contextmanager
@@ -23,7 +25,7 @@ def process_file(input_path):
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def execute(cmd, env):
+def execute(cmd: List[str], env):
     import subprocess
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env)
     for stdout_line in iter(popen.stdout.readline, ""):
@@ -32,3 +34,10 @@ def execute(cmd, env):
     return_code = popen.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
+
+def pkill(process_name):
+    try:
+        subprocess.run(["pkill", process_name])
+        print(f"Processes with name '{process_name}' killed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error killing processes: {e}")

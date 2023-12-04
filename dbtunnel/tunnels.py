@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from typing import Dict, Any, Literal
 from urllib.parse import urlparse
 
+from dbtunnel.utils import pkill
+
 
 @dataclass
 class ProxySettings:
@@ -49,8 +51,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     )
 
 
-Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
-"code-server"]
+Flavor = Literal["gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara", "code-server"]
 
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
@@ -100,6 +101,8 @@ class DbTunnel(abc.ABC):
         self._proxy_settings = get_cloud_proxy_settings(self._cloud, self._org_id, self._cluster_id,
                                                         self._port)
         self._loop = None
+        self._share = False
+        self._share_information = None
 
     @abc.abstractmethod
     def _imports(self):
@@ -149,7 +152,20 @@ class DbTunnel(abc.ABC):
 
     def run(self):
         self._imports()
+        if self._share is True and self._share_information is not None:
+            print(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
+
+    # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
+    def share(self, auth_token: str, mode: Literal["ngrok"] = "ngrok", kill_existing_processes: bool = True):
+        self._share = True
+        if mode == "ngrok":
+            if kill_existing_processes is True:
+                pkill("ngrok")
+            from dbtunnel.ngrok import NgrokTunnel
+            ngrok_tunnel = NgrokTunnel(self._port, auth_token)
+            self._share_information = ngrok_tunnel.run()
+        return self
 
     def display(self):
         self._display_html(self._display_url())
