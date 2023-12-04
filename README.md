@@ -67,6 +67,8 @@ The proxy option requires you to be logged in into databricks.
 2. Go to a databricks notebook:
 3. **If you are using free tier of ngrok you can only have one tunnel and one session at a time so enable `kill_all_tunnel_sessions=True`** 
 
+Take a look at the full example here [streamlit-example-ngrok.py](examples%2Fstreamlit%2Fstreamlit-example-ngrok.py)
+
 ```python
 from dbtunnel import dbtunnel
 
