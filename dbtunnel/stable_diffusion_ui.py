@@ -36,15 +36,21 @@ class StableDiffusionUITunnel(DbTunnel):
             script_path = script_file.name
 
         # Set environment variable
+        os.environ["COMMANDLINE_ARGS"] = ""
+
+        # skip adding base path if sharing out via tunneling tech
+        if self.shared is False:
+            os.environ["COMMANDLINE_ARGS"] += f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')} "
+
+        # Set environment variable
         if self._no_gpu:
-            os.environ["COMMANDLINE_ARGS"] = (
-                f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')} --skip"
-                f"-torch-cuda-test")
-        else:
-            os.environ["COMMANDLINE_ARGS"] = f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')}"
+            os.environ["COMMANDLINE_ARGS"] += (
+                f"--skip-torch-cuda-test ")
+        # else:
+        #     os.environ["COMMANDLINE_ARGS"] = f"--subpath={self._proxy_settings.url_base_path.rstrip('/').lstrip('/')}"
 
         if self._enable_insecure_extensions:
-            os.environ["COMMANDLINE_ARGS"] += " --enable-insecure-extension-access"
+            os.environ["COMMANDLINE_ARGS"] += " --enable-insecure-extension-access "
 
         if len(self._extra_flags) > 0:
             os.environ["COMMANDLINE_ARGS"] += f" {self._extra_flags}"
@@ -54,7 +60,9 @@ class StableDiffusionUITunnel(DbTunnel):
         my_env = os.environ.copy()
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
-        print(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
+        if self.shared is False:
+            print(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
+
         cmd = ["bash", script_path, "-f", "--listen"]
         print(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):

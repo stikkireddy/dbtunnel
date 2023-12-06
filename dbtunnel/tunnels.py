@@ -117,6 +117,10 @@ class DbTunnel(abc.ABC):
     def _display_url(self):
         pass
 
+    @property
+    def shared(self):
+        return self._share
+
     def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
             print("Setting databricks host from context")
