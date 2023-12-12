@@ -159,7 +159,8 @@ class DbTunnel(abc.ABC):
 
     def run(self):
         self._imports()
-        self._share_trigger_callback()
+        if self._share is True and self._share_trigger_callback is not None:
+            self._share_trigger_callback()
         if self._share is True and self._share_information is not None:
             print(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
