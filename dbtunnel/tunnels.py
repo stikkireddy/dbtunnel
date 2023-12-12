@@ -171,7 +171,10 @@ class DbTunnel(abc.ABC):
                                     ):
         self._share = True
         if kill_existing_processes is True:
-            pkill("ngrok")
+            try:
+                pkill("ngrok")
+            except KeyError:
+                print("no running tunnels to kill")
         from dbtunnel.ngrok import NgrokTunnel
         ngrok_tunnel = NgrokTunnel(self._port,
                                    ngrok_tunnel_auth_token,
