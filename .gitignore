@@ -343,3 +343,5 @@ pyrightconfig.json
 .idea
 gradio_cached_examples
 scratch
+.chainlit
+chainlit.md

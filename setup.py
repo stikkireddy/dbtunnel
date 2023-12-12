@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="dbtunnel",
-    version="0.5.0",
+    version="0.6.0",
     author="Sri Tikkireddy",
     author_email="sri.tikkireddy@databricks.com",
     description="Run app and get cluster proxy url for it in databricks clusters",
@@ -31,7 +31,7 @@ setup(
         ],
         "gradio": [
             # Specify dependencies for building documentation here
-            "gradio",
+            "gradio==3.50.2",
             "nest_asyncio",
         ],
         "nicegui": [
@@ -62,8 +62,13 @@ setup(
             "solara",
         ],
         "ngrok": [
-            "pyngrok",
+            "ngrok",
             "requests",
+            "nest_asyncio",
+        ],
+        "chainlit": [
+            "chainlit",
+            "nest_asyncio",
         ]
     },
     classifiers=[

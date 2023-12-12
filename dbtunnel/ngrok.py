@@ -1,28 +1,45 @@
 import os
 
 try:
-    from pyngrok import ngrok
+    import ngrok as ng
 except ImportError:
     raise ImportError(
-        "Please install pyngrok or dbtunnel[ngrok]."
+        "Please install ngrok or dbtunnel[ngrok]."
     )
 
 
 class NgrokTunnel:
 
-    def __init__(self, port: int, ngrok_tunnel_auth_token: str, ngrok_api_token: str):
+    def __init__(self, port: int,
+                 ngrok_tunnel_auth_token: str,
+                 ngrok_api_token: str,
+                 basic_auth: str = None,  # "databricks:password"
+                 domain: str = None,
+                 oauth_provider: str = None,
+                 oauth_allow_domains: list[str] = None,
+                 ):
+        self._oauth_allow_domains = oauth_allow_domains
+        self._oauth_provider = oauth_provider
+        self._domain = domain
+        self._basic_auth = basic_auth
         self._ngrok_api_token = ngrok_api_token
         self._ngrok_auth_token = ngrok_tunnel_auth_token
         self._port = port
         self._env = os.environ.copy()
 
-    def _setup(self):
-        ngrok.install_ngrok()
-        ngrok.set_auth_token(self._ngrok_auth_token)
 
     def run(self):
-        self._setup()
-        return ngrok.connect(str(self._port))
+        os.environ["NGROK_AUTHTOKEN"] = self._ngrok_auth_token
+        listener = ng.forward(self._port,
+                             domain=self._domain,
+                             oauth_provider=self._oauth_provider,
+                             oauth_allow_domains=self._oauth_allow_domains,
+                             authtoken_from_env=True)
+        import asyncio       
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(listener)
+        print("\n\n\n\n")
+        return
 
     def kill_existing_sessions(self):
         # pyngrok doesnt do this so we have to manually do this
