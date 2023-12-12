@@ -52,7 +52,8 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 
 Flavor = Literal[
-    "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara", "code-server"]
+    "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
+    "code-server", "chainlit"]
 
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
@@ -104,6 +105,7 @@ class DbTunnel(abc.ABC):
         self._loop = None
         self._share = False
         self._share_information = None
+        self._share_trigger_callback = None
 
     @abc.abstractmethod
     def _imports(self):
@@ -157,6 +159,7 @@ class DbTunnel(abc.ABC):
 
     def run(self):
         self._imports()
+        self._share_trigger_callback()
         if self._share is True and self._share_information is not None:
             print(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
@@ -168,18 +171,34 @@ class DbTunnel(abc.ABC):
                                     ngrok_tunnel_auth_token: str,
                                     kill_existing_processes: bool = True,
                                     kill_all_tunnel_sessions: bool = False,
-                                    ):
+                                    basic_auth: str = None,  # "databricks:password"
+                                    domain: str = None,
+                                    oauth_provider: str = None,
+                                    oauth_allow_domains: list[str] = None):
         self._share = True
         if kill_existing_processes is True:
             pkill("ngrok")
         from dbtunnel.ngrok import NgrokTunnel
         ngrok_tunnel = NgrokTunnel(self._port,
                                    ngrok_tunnel_auth_token,
-                                   ngrok_api_token)
-        if kill_all_tunnel_sessions is True:
-            ngrok_tunnel.kill_existing_sessions()
-        self._share_information = ngrok_tunnel.run()
+                                   ngrok_api_token,
+                                   basic_auth=basic_auth,
+                                   domain=domain,
+                                   oauth_provider=oauth_provider,
+                                   oauth_allow_domains=oauth_allow_domains,
+                                   )
+
+        def ngrok_callback():
+            if kill_all_tunnel_sessions is True:
+                ngrok_tunnel.kill_existing_sessions()
+            listener = ngrok_tunnel.run()
+            self._share_information = listener
+            print(f"Use this information to publicly access your app: \n{listener.url()}")
+
+        self._share_trigger_callback = ngrok_callback
+
         return self
 
     def display(self):
-        self._display_html(self._display_url())
+        pass  # no op because of the annoying flickering
+        # self._display_html(self._display_url())

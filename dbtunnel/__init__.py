@@ -1,4 +1,5 @@
 from dbtunnel.bokeh import BokehTunnel
+from dbtunnel.chainlit import ChainlitAppTunnel
 from dbtunnel.code_server import CodeServerTunnel
 from dbtunnel.dash import DashAppTunnel
 from dbtunnel.fastapi import FastApiAppTunnel
@@ -53,6 +54,10 @@ class AppTunnels:
     @staticmethod
     def code_server(directory_path: str = None, repo_name: str = None, port: int = 9988):
         return CodeServerTunnel(directory_path, repo_name, port)
+
+    @staticmethod
+    def chainlit(script_path: str, port: int = 8000):
+        return ChainlitAppTunnel(script_path, port)
 
 
 dbtunnel = AppTunnels()
