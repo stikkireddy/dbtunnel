@@ -197,7 +197,7 @@ class DbTunnel(abc.ABC):
         def ngrok_callback():
             if kill_all_tunnel_sessions is True:
                 ngrok_tunnel.kill_existing_sessions()
-            listener = ngrok_tunnel.run()
+            ngrok_tunnel.run()
 
         self._share_trigger_callback = ngrok_callback
 

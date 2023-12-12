@@ -12,17 +12,18 @@ Easy way to test the following things on a databricks cluster and notebooks
 
 ### Framework Support
 
-* [x] fastapi
-* [x] gradio
-* [x] stable diffusion webui
-* [x] streamlit
-* [x] nicegui
-* [x] flask
-* [x] dash
-* [x] bokeh
+* [x] fastapi: [fastapi.py](examples%2Ffastapi%2Ffastapi.py)
+* [x] gradio: [gradio-demo.py](examples%2Fgradio%2Fgradio-demo.py)
+* [x] stable diffusion webui: [stable-diffusion-example.py](examples%2Fstable-diffusion-webui%2Fstable-diffusion-example.py)
+* [x] streamlit: [streamlit_example.py](examples%2Fstreamlit%2Fstreamlit_example.py)
+* [x] nicegui: [nicegui-example.py](examples%2Fnicegui%2Fnicegui-example.py)
+* [x] flask: [flask-app.py](examples%2Fflask%2Fflask-app.py)
+* [x] dash: [dask-example.py](examples%2Fdash%2Fdask-example.py)
+* [x] bokeh: [bokeh-example.py](examples%2Fbokeh%2Fbokeh-example.py)
 * [ ] posit
 * [ ] panel
-* [x] solara
+* [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
+* [x] chainlit: [chainlit.py](examples%2Fchainlit%2Fchainlit.py)
 * [x] code-server on repos ([code-server-example.py](examples%2Fcode-server%2Fcode-server-example.py))
 
 Easy way to test out llm chatbots; look in examples/gradio
