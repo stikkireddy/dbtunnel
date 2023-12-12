@@ -7,9 +7,10 @@ class ChainlitAppTunnel(DbTunnel):
     def _imports(self):
         try:
             import chainlit
+            import nest_asyncio
         except ImportError as e:
             print("ImportError: Make sure you have chainlit installed. \n"
-                  "pip install chainlit")
+                  "pip install chainlit nest_asyncio")
             raise e
 
     def _run(self):

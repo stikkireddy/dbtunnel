@@ -64,9 +64,11 @@ setup(
         "ngrok": [
             "ngrok",
             "requests",
+            "nest_asyncio",
         ],
         "chainlit": [
             "chainlit",
+            "nest_asyncio",
         ]
     },
     classifiers=[
