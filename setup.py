@@ -31,7 +31,7 @@ setup(
         ],
         "gradio": [
             # Specify dependencies for building documentation here
-            "gradio",
+            "gradio==3.50.2",
             "nest_asyncio",
         ],
         "nicegui": [
