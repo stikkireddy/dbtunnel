@@ -193,8 +193,8 @@ class DbTunnel(abc.ABC):
             if kill_all_tunnel_sessions is True:
                 ngrok_tunnel.kill_existing_sessions()
             listener = ngrok_tunnel.run()
-            self._share_information = listener
-            print(f"Use this information to publicly access your app: \n{listener.url()}")
+            self._share_information = listener()
+            print(f"Use this information to publicly access your app: \n{self._share_information.url()}")
 
         self._share_trigger_callback = ngrok_callback
 
