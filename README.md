@@ -24,7 +24,7 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [ ] panel
 * [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
 * [x] chainlit: [chainlit.py](examples%2Fchainlit%2Fchainlit.py)
-* [x] code-server on repos ([code-server-example.py](examples%2Fcode-server%2Fcode-server-example.py))
+* [x] code-server on repos [code-server-example.py](examples%2Fcode-server%2Fcode-server-example.py)
 
 Easy way to test out llm chatbots; look in examples/gradio
 
