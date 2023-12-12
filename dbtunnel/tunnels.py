@@ -160,6 +160,8 @@ class DbTunnel(abc.ABC):
     def run(self):
         self._imports()
         if self._share is True and self._share_trigger_callback is not None:
+            import nest_asyncio
+            nest_asyncio.apply()
             self._share_trigger_callback()
         if self._share is True and self._share_information is not None:
             print(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
@@ -193,8 +195,6 @@ class DbTunnel(abc.ABC):
             if kill_all_tunnel_sessions is True:
                 ngrok_tunnel.kill_existing_sessions()
             listener = ngrok_tunnel.run()
-            self._share_information = listener()
-            print(f"Use this information to publicly access your app: \n{self._share_information.url()}")
 
         self._share_trigger_callback = ngrok_callback
 

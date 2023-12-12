@@ -1,7 +1,7 @@
 import os
 
 try:
-    import ngrok
+    import ngrok as ng
 except ImportError:
     raise ImportError(
         "Please install ngrok or dbtunnel[ngrok]."
@@ -27,17 +27,19 @@ class NgrokTunnel:
         self._port = port
         self._env = os.environ.copy()
 
-    # def _setup(self):
-    #     ngrok.install_ngrok()
-    #     ngrok.set_auth_token(self._ngrok_auth_token)
 
     def run(self):
         os.environ["NGROK_AUTHTOKEN"] = self._ngrok_auth_token
-        return ngrok.forward(8000,
+        listener = ng.forward(self._port,
                              domain=self._domain,
                              oauth_provider=self._oauth_provider,
                              oauth_allow_domains=self._oauth_allow_domains,
                              authtoken_from_env=True)
+        import asyncio       
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(listener)
+        print("\n\n\n\n")
+        return
 
     def kill_existing_sessions(self):
         # pyngrok doesnt do this so we have to manually do this

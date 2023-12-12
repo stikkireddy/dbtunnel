@@ -23,7 +23,7 @@ class ChainlitAppTunnel(DbTunnel):
         my_env = os.environ.copy()
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
-        cmd = ["chainlit", "run", self._chainlit_script_path, "-h", "--host", "0.0.0.0", "-port", f"{self._port}"]
+        cmd = ["chainlit", "run", self._chainlit_script_path, "-h", "--host", "0.0.0.0", "--port", f"{self._port}"]
         print(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
             print(path, end="")
