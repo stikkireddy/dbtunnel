@@ -41,11 +41,15 @@ class StreamlitTunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
 
         print(f"Deploying streamlit app at path: {path} on port: {port}")
-        cmd = ["streamlit",
-               "run",
-               path,
-               "--browser.gatherUsageStats",
-               "false"]
+        cmd = [
+            "streamlit",
+            "run",
+            path,
+            "--browser.gatherUsageStats",
+            "false",
+            "--server.fileWatcherType",
+            "none"
+        ]
         print(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
             print(path, end="")
