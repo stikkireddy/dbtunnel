@@ -23,9 +23,6 @@ from dbtunnel import dbtunnel
 # you must have both so that we can kill external sessions if this is a personal account
 dbtunnel.streamlit(script_path).share_to_internet_via_ngrok(
     ngrok_api_token="<ngrok api token>",
-    ngrok_tunnel_auth_token="<ngrok tunnel auth token>"
+    ngrok_tunnel_auth_token="<ngrok tunnel auth token>",
+    # kill_all_tunnel_sessions=True,
 ).run()
-
-# COMMAND ----------
-
-
