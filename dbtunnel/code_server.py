@@ -14,6 +14,7 @@ def create_default_python_interpreter(path: str):
         with open(path, "w") as f:
             f.write(json.dumps(res, indent=4))
     else:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as f:
             f.write(json.dumps({
                 "python.defaultInterpreterPath": str(sys.executable)
