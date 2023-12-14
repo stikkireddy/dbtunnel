@@ -62,13 +62,13 @@ setup(
             "solara",
         ],
         "ngrok": [
-            "ngrok",
+            # going back to pyngrok its more stable and easy to delete sessions
+            "pyngrok",
+            "ngrok-api"
             "requests",
-            "nest_asyncio",
         ],
         "chainlit": [
             "chainlit",
-            "nest_asyncio",
         ]
     },
     classifiers=[
