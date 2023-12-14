@@ -19,11 +19,18 @@ def create_default_python_interpreter(path: str):
                 "python.defaultInterpreterPath": str(sys.executable)
             }, indent=4))
 
+def get_site_package():
+    import site
+    for item in site.getsitepackages():
+        if str(item).endswith("site-packages"):
+            return str(item)
+
+
 class CodeServerTunnel(DbTunnel):
 
-    def __init__(self, 
-                 directory_path: str = None, 
-                 repo_name: str = None, 
+    def __init__(self,
+                 directory_path: str = None,
+                 repo_name: str = None,
                  config_save_path: str = None,
                  port: int = 9988):
         # Check if either directory_path or repo_name is provided
@@ -43,7 +50,7 @@ class CodeServerTunnel(DbTunnel):
             self._dir_path = directory_path
 
         if config_save_path is None:
-            self._config_save_path = f'/root/code-server/config/{get_current_username()}/defaults'# set XDG_DATA_HOME
+            self._config_save_path = f'/root/code-server/config/{get_current_username()}/defaults'  # set XDG_DATA_HOME
         else:
             self._config_save_path = config_save_path
 
@@ -74,24 +81,26 @@ class CodeServerTunnel(DbTunnel):
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         my_env["XDG_DATA_HOME"] = str(self._config_save_path)
         if my_env.get("PYTHONPATH", None) is None:
-            my_env["PYTHONPATH"] = self._dir_path
+            my_env["PYTHONPATH"] = self._dir_path + ":" + get_site_package()
         else:
-            my_env["PYTHONPATH"] = self._dir_path + ":" + my_env.get("PYTHONPATH", "")
+            my_env["PYTHONPATH"] = self._dir_path + ":" + get_site_package() + ":" + my_env.get("PYTHONPATH", "")
         create_default_python_interpreter(os.path.join(self._config_save_path, "code-server", "User", "settings.json"))
         create_default_python_interpreter(os.path.join(self._dir_path, ".vscode", "settings.json"))
         my_env[PROXY_SETTINGS_ENV_VAR_CONF] = self._proxy_conf.to_json()
 
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
         print("Installing extensions")
-        extensions = ["ms-python.python", 
-                      "ms-toolsai.jupyter",
-                      "ms-toolsai.jupyter-renderers", 
-                      "ms-toolsai.jupyter-keymap",
-                      "ms-toolsai.vscode-jupyter-cell-tags",
-                      "ms-toolsai.vscode-jupyter-slideshow",
-                      "luma.jupyter", 
-                      "databricks.databricks", 
-                      "databricks.sqltools-databricks-driver"]
+        extensions = [
+            "ms-python.python",
+            # "ms-toolsai.jupyter",
+            # "ms-toolsai.jupyter-renderers",
+            # "ms-toolsai.jupyter-keymap",
+            # "ms-toolsai.vscode-jupyter-cell-tags",
+            # "ms-toolsai.vscode-jupyter-slideshow",
+            # "luma.jupyter",
+            "databricks.databricks",
+            "databricks.sqltools-databricks-driver"
+        ]
         for ext in extensions:
             print(f"Installing extensions: {ext}")
             subprocess.run(f"code-server --install-extension {ext}", capture_output=True, shell=True, env=my_env)
