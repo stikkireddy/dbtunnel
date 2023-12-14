@@ -53,7 +53,7 @@ class AppTunnels:
 
     @staticmethod
     def code_server(directory_path: str = None, repo_name: str = None, port: int = 9988):
-        return CodeServerTunnel(directory_path, repo_name, port)
+        return CodeServerTunnel(directory_path=directory_path, repo_name=repo_name, port=port)
 
     @staticmethod
     def chainlit(script_path: str, port: int = 8000):
