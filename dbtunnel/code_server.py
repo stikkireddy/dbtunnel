@@ -1,9 +1,17 @@
+import json
 import os
 import subprocess
+import sys
 
 from dbtunnel.tunnels import DbTunnel, get_current_username, PROXY_SETTINGS_ENV_VAR_CONF
 from dbtunnel.utils import execute
 
+
+def create_default_python_interpreter(path: str):
+    with open(path, "w") as f:
+        f.write(json.dumps({
+            "python.defaultInterpreterPath": str(sys.executable)
+        }, indent=4))
 
 class CodeServerTunnel(DbTunnel):
 
@@ -59,6 +67,7 @@ class CodeServerTunnel(DbTunnel):
         my_env = os.environ.copy()
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         my_env["XDG_DATA_HOME"] = str(self._config_save_path)
+        create_default_python_interpreter(os.path.join(self._config_save_path, "settings.json"))
         my_env[PROXY_SETTINGS_ENV_VAR_CONF] = self._proxy_conf.to_json()
 
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
