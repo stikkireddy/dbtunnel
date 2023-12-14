@@ -8,10 +8,16 @@ from dbtunnel.utils import execute
 
 
 def create_default_python_interpreter(path: str):
-    with open(path, "w") as f:
-        f.write(json.dumps({
-            "python.defaultInterpreterPath": str(sys.executable)
-        }, indent=4))
+    if os.path.exists(path):
+        res = json.loads(open(path, "r").read())
+        res["python.defaultInterpreterPath"] = str(sys.executable)
+        with open(path, "w") as f:
+            f.write(json.dumps(res, indent=4))
+    else:
+        with open(path, "w") as f:
+            f.write(json.dumps({
+                "python.defaultInterpreterPath": str(sys.executable)
+            }, indent=4))
 
 class CodeServerTunnel(DbTunnel):
 
@@ -72,6 +78,7 @@ class CodeServerTunnel(DbTunnel):
         else:
             my_env["PYTHONPATH"] = self._dir_path + ":" + my_env.get("PYTHONPATH", "")
         create_default_python_interpreter(os.path.join(self._config_save_path, "code-server", "User", "settings.json"))
+        create_default_python_interpreter(os.path.join(self._dir_path, ".vscode", "settings.json"))
         my_env[PROXY_SETTINGS_ENV_VAR_CONF] = self._proxy_conf.to_json()
 
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
