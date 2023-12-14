@@ -108,6 +108,7 @@ class DbTunnel(abc.ABC):
         self._flavor = flavor
         if os.getenv(PROXY_SETTINGS_ENV_VAR) is not None:
             self._proxy_settings = ProxySettings.from_json(os.getenv(PROXY_SETTINGS_ENV_VAR))
+            self._proxy_settings.port = self._port
         else:
             import IPython
             self._dbutils = IPython.get_ipython().user_ns["dbutils"]
