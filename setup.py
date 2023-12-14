@@ -5,7 +5,6 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="dbtunnel",
-    version="0.6.0",
     author="Sri Tikkireddy",
     author_email="sri.tikkireddy@databricks.com",
     description="Run app and get cluster proxy url for it in databricks clusters",
@@ -13,8 +12,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/stikkireddy/dbtunnel",
     packages=find_packages(),
-    install_requires=[
-    ],
+    install_requires=[],
+    setup_requires=["setuptools_scm"],
+    use_scm_version=True,
     # TODO: start refactoring nest_asyncio only when async.run is needed
     extras_require={
         "fastapi": [
