@@ -8,11 +8,25 @@ from urllib.parse import urlparse
 from dbtunnel.utils import pkill
 
 
+PROXY_SETTINGS_ENV_VAR = "DBTUNNEL_PROXY_SETTINGS"
+
 @dataclass
 class ProxySettings:
     proxy_url: str
     port: str
     url_base_path: str
+
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+    @classmethod
+    def from_json(cls, json_str):
+        json_data = json.loads(json_str)
+        return cls(**json_data)
+
+    @staticmethod
+    def from_dict(data):
+        return ProxySettings(**data)
 
 
 def get_cloud(context: Dict[str, Any]) -> str:
@@ -92,16 +106,20 @@ class DbTunnel(abc.ABC):
     def __init__(self, port: int, flavor: Flavor):
         self._port = port
         self._flavor = flavor
-        import IPython
-        self._dbutils = IPython.get_ipython().user_ns["dbutils"]
-        self._display_html = IPython.get_ipython().user_ns["displayHTML"]
-        self._context = json.loads(self._dbutils.notebook.entry_point.getDbutils().notebook().getContext().toJson())
-        self._org_id = self._context["tags"]["orgId"]
-        self._cluster_id = self._context["tags"]["clusterId"]
-        # need to do this after the context is set
-        self._cloud = get_cloud(self._context)
-        self._proxy_settings = get_cloud_proxy_settings(self._cloud, self._org_id, self._cluster_id,
-                                                        self._port)
+        if os.getenv(PROXY_SETTINGS_ENV_VAR) is not None:
+            self._proxy_settings = ProxySettings.from_json(os.getenv(PROXY_SETTINGS_ENV_VAR))
+        else:
+            import IPython
+            self._dbutils = IPython.get_ipython().user_ns["dbutils"]
+            self._context = json.loads(self._dbutils.notebook.entry_point.getDbutils().notebook().getContext().toJson())
+            self._org_id = self._context["tags"]["orgId"]
+            self._cluster_id = self._context["tags"]["clusterId"]
+            # need to do this after the context is set
+            self._cloud = get_cloud(self._context)
+            self._proxy_settings = get_cloud_proxy_settings(self._cloud,
+                                                            self._org_id,
+                                                            self._cluster_id,
+                                                            self._port)
         self._loop = None
         self._share = False
         self._share_information = None
