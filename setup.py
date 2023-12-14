@@ -64,7 +64,7 @@ setup(
         "ngrok": [
             # going back to pyngrok its more stable and easy to delete sessions
             "pyngrok",
-            "ngrok-api"
+            "ngrok-api",
             "requests",
         ],
         "chainlit": [
