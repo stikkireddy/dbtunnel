@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from dbtunnel.tunnels import DbTunnel, get_current_username, PROXY_SETTINGS_ENV_VAR
+from dbtunnel.tunnels import DbTunnel, get_current_username, PROXY_SETTINGS_ENV_VAR_CONF
 from dbtunnel.utils import execute
 
 
@@ -59,7 +59,7 @@ class CodeServerTunnel(DbTunnel):
         my_env = os.environ.copy()
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         my_env["XDG_DATA_HOME"] = str(self._config_save_path)
-        my_env[PROXY_SETTINGS_ENV_VAR] = self._proxy_settings.to_json()
+        my_env[PROXY_SETTINGS_ENV_VAR_CONF] = self._proxy_conf.to_json()
 
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
         print("Installing extensions")

@@ -8,10 +8,27 @@ from urllib.parse import urlparse
 from dbtunnel.utils import pkill
 
 
-PROXY_SETTINGS_ENV_VAR = "DBTUNNEL_PROXY_SETTINGS"
+@dataclass
+class ProxyConf:
+    cloud: str
+    org_id: str
+    cluster_id: str
+
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+    @classmethod
+    def from_json(cls, json_str):
+        json_data = json.loads(json_str)
+        return cls(**json_data)
+
+    @staticmethod
+    def from_dict(data):
+        return ProxyConf(**data)
+
 
 @dataclass
-class ProxySettings:
+class Proxy:
     proxy_url: str
     port: str
     url_base_path: str
@@ -26,7 +43,7 @@ class ProxySettings:
 
     @staticmethod
     def from_dict(data):
-        return ProxySettings(**data)
+        return Proxy(**data)
 
 
 def get_cloud(context: Dict[str, Any]) -> str:
@@ -36,7 +53,9 @@ def get_cloud(context: Dict[str, Any]) -> str:
     return "aws"
 
 
-def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int) -> ProxySettings:
+PROXY_SETTINGS_ENV_VAR_CONF = "DBTUNNEL_PROXY_SETTINGS_CONF"
+
+def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int) -> Proxy:
     cloud_norm = cloud.lower()
     if cloud_norm not in ["aws", "azure"]:
         raise Exception("only supported in aws or azure")
@@ -58,7 +77,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
         org_shard = f".{org_shard_id}"
     # cluster_id = self._context["tags"]["clusterId"]
     url_base_path = f"/driver-proxy/o/{org_id}/{cluster_id}/{port}/"
-    return ProxySettings(
+    return Proxy(
         proxy_url=f"{prefix_url_settings[cloud_norm]}{org_id}{org_shard}.{suffix_url_settings[cloud_norm]}{url_base_path}",
         port=str(port),
         url_base_path=url_base_path
@@ -106,10 +125,14 @@ class DbTunnel(abc.ABC):
     def __init__(self, port: int, flavor: Flavor):
         self._port = port
         self._flavor = flavor
-        if os.getenv(PROXY_SETTINGS_ENV_VAR) is not None:
-            self._proxy_settings = ProxySettings.from_json(os.getenv(PROXY_SETTINGS_ENV_VAR))
-            self._proxy_settings.port = self._port
+        if os.getenv(PROXY_SETTINGS_ENV_VAR_CONF) is not None:
+            # path in cluster based code server
+            self._proxy_conf = ProxyConf.from_json(os.getenv(PROXY_SETTINGS_ENV_VAR_CONF))
+            self._cloud = self._proxy_conf.cloud
+            self._org_id = self._proxy_conf.org_id
+            self._cluster_id = self._proxy_conf.cluster_id
         else:
+            # path in notebook
             import IPython
             self._dbutils = IPython.get_ipython().user_ns["dbutils"]
             self._context = json.loads(self._dbutils.notebook.entry_point.getDbutils().notebook().getContext().toJson())
@@ -117,10 +140,12 @@ class DbTunnel(abc.ABC):
             self._cluster_id = self._context["tags"]["clusterId"]
             # need to do this after the context is set
             self._cloud = get_cloud(self._context)
-            self._proxy_settings = get_cloud_proxy_settings(self._cloud,
-                                                            self._org_id,
-                                                            self._cluster_id,
-                                                            self._port)
+            self._proxy_conf = ProxyConf(self._cloud, self._org_id, self._cluster_id)
+
+        self._proxy_settings = get_cloud_proxy_settings(self._cloud,
+                                                        self._org_id,
+                                                        self._cluster_id,
+                                                        self._port)
         self._loop = None
         self._share = False
         self._share_information = None
