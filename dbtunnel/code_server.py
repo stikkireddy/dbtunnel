@@ -67,6 +67,10 @@ class CodeServerTunnel(DbTunnel):
         my_env = os.environ.copy()
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         my_env["XDG_DATA_HOME"] = str(self._config_save_path)
+        if my_env.get("PYTHONPATH", None) is None:
+            my_env["PYTHONPATH"] = self._dir_path
+        else:
+            my_env["PYTHONPATH"] = self._dir_path + ":" + my_env.get("PYTHONPATH", "")
         create_default_python_interpreter(os.path.join(self._config_save_path, "code-server", "User", "settings.json"))
         my_env[PROXY_SETTINGS_ENV_VAR_CONF] = self._proxy_conf.to_json()
 
