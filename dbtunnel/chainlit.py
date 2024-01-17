@@ -26,14 +26,13 @@ class ChainlitAppTunnel(DbTunnel):
 
         cmd = ["chainlit", "run", self._chainlit_script_path, "-h", "--host", "0.0.0.0", "--port", f"{self._port}"]
         print(f"Running command: {' '.join(cmd)}")
-        for path in execute(cmd, my_env):
+        for path in execute(cmd, my_env, cwd=self._cwd):
             print(path, end="")
 
-    def __init__(self, chainlit_script_path: str, port: int = 8000):
+    def __init__(self, chainlit_script_path: str, cwd: str = None, port: int = 8000):
         super().__init__(port, "chainlit")
         self._chainlit_script_path = chainlit_script_path
+        self._cwd = cwd
 
     def _display_url(self):
         return None
-
-

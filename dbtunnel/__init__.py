@@ -56,8 +56,8 @@ class AppTunnels:
         return CodeServerTunnel(directory_path, repo_name, port)
 
     @staticmethod
-    def chainlit(script_path: str, port: int = 8000):
-        return ChainlitAppTunnel(script_path, port)
+    def chainlit(script_path: str, cwd: str = None, port: int = 8000):
+        return ChainlitAppTunnel(script_path, cwd=cwd, port=port)
 
 
 dbtunnel = AppTunnels()

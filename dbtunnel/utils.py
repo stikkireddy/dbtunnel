@@ -25,9 +25,9 @@ def process_file(input_path):
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def execute(cmd: List[str], env):
+def execute(cmd: List[str], env, cwd=None):
     import subprocess
-    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env)
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env, cwd=cwd)
     for stdout_line in iter(popen.stdout.readline, ""):
         yield stdout_line
     popen.stdout.close()
