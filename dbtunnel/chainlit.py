@@ -120,6 +120,7 @@ class ChainlitAppTunnel(DbTunnel):
             uvicorn_thread = threading.Thread(target=run_uvicorn_app)
             # Start the thread in the background
             uvicorn_thread.start()
+            print(f"Use this link to access the UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
         print("Starting chainlit...", flush=True)
 
