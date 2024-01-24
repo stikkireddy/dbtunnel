@@ -78,22 +78,8 @@ async def convert_proxy_response_to_user_response(
         )
     response_content = await proxy_response.read()
     new_headers = headers_to_client
-    # root_path_bytes = scope["root_path"].encode("utf-8")
-    # root_path = scope["root_path"]
 
-
-    # if scope["path"] == "/" or scope["path"] == "" or scope["path"] is None:
-    #     list_of_uris = [b"/assets", b"/public"]
-    #     for uri in list_of_uris:
-    #         response_content = response_content.replace(uri, root_path_bytes + uri)
-    #     new_headers = {k: v for k, v in headers_to_client.items()}
-    #     new_headers["Content-Length"] = str(len(response_content))
-    # if fnmatch.fnmatch(scope["path"], "*assets/index-*.js"):
-    #     list_of_uris = [b"/project/settings", b"/auth/config"]
-    #     for uri in list_of_uris:
-    #         response_content = response_content.replace(uri, root_path_bytes + uri)
-    #     # response_content = response_content.replace(b'path:"*"', b'path:"/some/path"')
-    #     response_content = response_content.replace(b'{path:"*",element:E.jsx(MC,{replace:!0,to:"/"})}', b'{path:"*",element:E.jsx(PGt,{})}')
+    # Forked code
     if response_content is not None and len(response_content) > 0:
         for path_pattern, modify_func in context.config.modify_content.items():
             if fnmatch.fnmatch(scope["path"], path_pattern):

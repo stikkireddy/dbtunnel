@@ -91,7 +91,6 @@ class ChainlitAppTunnel(DbTunnel):
 
     def _run(self):
         import os
-        import subprocess
 
         chainlit_service_port_no_share = 9090
         if self._share is False:
