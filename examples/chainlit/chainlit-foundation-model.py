@@ -1,5 +1,9 @@
 # Databricks notebook source
-# MAGIC %pip install dbtunnel[asgiproxy,chainlit] databricks-genai-inference langchain-community tiktoken langchain mlflow-skinny chromadb rank_bm25 simsimd
+# MAGIC %pip install dbtunnel[asgiproxy,chainlit]
+
+# COMMAND ----------
+
+# MAGIC %pip install databricks-genai-inference langchain-community tiktoken langchain mlflow-skinny chromadb rank_bm25 simsimd
 
 # COMMAND ----------
 
