@@ -11,6 +11,14 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC
+# MAGIC ### RAG Demo using Foundation Model APIs (Mixtral 8x7b Instruct Chat + BGE-en-Large Embeddings)
+# MAGIC
+# MAGIC Take a look at the langchain code in the file `chainlit_foundation_model.py`.
+
+# COMMAND ----------
+
 import os
 
 current_directory = os.getcwd()
