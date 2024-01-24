@@ -35,9 +35,19 @@ def execute(cmd: List[str], env, cwd=None):
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
 
+
 def pkill(process_name):
     try:
         subprocess.run(["pkill", process_name])
         print(f"Processes with name '{process_name}' killed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error killing processes: {e}")
+
+
+def make_asgi_proxy_app(proxy_config):
+    from dbtunnel.vendor.asgiproxy.context import ProxyContext
+    from dbtunnel.vendor.asgiproxy.simple_proxy import make_simple_proxy_app
+
+    proxy_context = ProxyContext(proxy_config)
+    app = make_simple_proxy_app(proxy_context)
+    return app

@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install dbtunnel[asgiproxy,chainlit]
+# MAGIC %pip install dbtunnel[chainlit,ngrok]
 
 # COMMAND ----------
 
@@ -16,7 +16,10 @@ script_path = current_directory + "/chainlit_example.py"
 
 from dbtunnel import dbtunnel
 
-dbtunnel.chainlit(script_path).run()
+dbtunnel.chainlit(script_path).share_to_internet_via_ngrok(
+    ngrok_api_token="<ngrok api token>",
+    ngrok_tunnel_auth_token="<ngrok tunnel auth token>"
+).run()
 
 # COMMAND ----------
 

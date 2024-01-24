@@ -2,7 +2,7 @@ import abc
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Any, Literal
+from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
 from dbtunnel.utils import pkill
@@ -13,6 +13,7 @@ class ProxySettings:
     proxy_url: str
     port: str
     url_base_path: str
+    url_base_path_no_port: Optional[str] = None
 
 
 def get_cloud(context: Dict[str, Any]) -> str:
@@ -43,11 +44,13 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
         org_shard_id = int(org_id) % 20
         org_shard = f".{org_shard_id}"
     # cluster_id = self._context["tags"]["clusterId"]
-    url_base_path = f"/driver-proxy/o/{org_id}/{cluster_id}/{port}/"
+    url_base_path_no_port = f"/driver-proxy/o/{org_id}/{cluster_id}"
+    url_base_path = f"{url_base_path_no_port}/{port}/"
     return ProxySettings(
         proxy_url=f"{prefix_url_settings[cloud_norm]}{org_id}{org_shard}.{suffix_url_settings[cloud_norm]}{url_base_path}",
         port=str(port),
-        url_base_path=url_base_path
+        url_base_path=url_base_path,
+        url_base_path_no_port=url_base_path_no_port
     )
 
 
