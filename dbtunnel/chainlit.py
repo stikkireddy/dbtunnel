@@ -106,7 +106,7 @@ class ChainlitAppTunnel(DbTunnel):
 
             def run_uvicorn_app():
                 print("Starting proxy server...")
-                app, proxy_context = make_asgi_proxy_app(make_chainlit_local_proxy_config(
+                app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
                     url_base_path,
                     service_port=chainlit_service_port_no_share
                 ))
