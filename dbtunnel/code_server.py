@@ -48,7 +48,7 @@ class CodeServerTunnel(DbTunnel):
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
-        # "VSCODE_PROXY_URI=“./driver-proxy/o/984752964297111/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
+        # "VSCODE_PROXY_URI=“./driver-proxy/o/<id>/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
         print(f"Deploying code server on port: {self._port}")
         print(f"Use this link: \n{self._proxy_settings.proxy_url}?folder={self._dir_path}")
         cmd = ["code-server",
