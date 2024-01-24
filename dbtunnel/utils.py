@@ -25,20 +25,20 @@ def process_file(input_path):
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def ensure_python_path():
+def ensure_python_path(env):
     import sys
     import os
     from pathlib import Path
     for python_version_dir in (Path(sys.executable).parent.parent / "lib").iterdir():
         site_packages = str(python_version_dir / "site-packages")
-        py_path = os.environ["PYTHONPATH"]
+        py_path = env.get("PYTHONPATH", "")
         if site_packages not in py_path.split(":"):
-            os.environ["PYTHONPATH"] = f"{os.environ['PYTHONPATH']}:{site_packages}"
+            env["PYTHONPATH"] = f"{py_path}:{site_packages}"
 
 
 def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
     if ensure_python_site_packages:
-        ensure_python_path()
+        ensure_python_path(env)
     import subprocess
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env, cwd=cwd)
     for stdout_line in iter(popen.stdout.readline, ""):
