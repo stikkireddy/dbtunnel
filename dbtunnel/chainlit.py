@@ -95,7 +95,6 @@ class ChainlitAppTunnel(DbTunnel):
 
         chainlit_service_port_no_share = 9090
         if self._share is False:
-            subprocess.run(f"kill -9 $(lsof -t -i:{chainlit_service_port_no_share})", capture_output=True, shell=True)
 
             url_base_path = self._proxy_settings.url_base_path
             port = self._port
@@ -125,9 +124,6 @@ class ChainlitAppTunnel(DbTunnel):
         print("Starting chainlit...", flush=True)
 
         my_env = os.environ.copy()
-        # TODO: fix kernel failure
-        # if self._share is True:
-        #     subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
         if self._share is False:
             cmd = ["chainlit", "run", self._chainlit_script_path, "-h", "--host", "0.0.0.0", "--port",
