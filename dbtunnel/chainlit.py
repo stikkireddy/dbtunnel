@@ -71,6 +71,26 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
     return config
 
 
+def add_shutdown(app):
+    from starlette.responses import JSONResponse
+    async def shutdown_app():
+        print("Shutting down the app gracefully...")
+        # Perform any cleanup or shutdown tasks here
+        # ...
+
+        # Shut down the app
+        await app.shutdown()
+
+    @app.route("/shutdown", methods=["POST"])
+    async def shutdown_endpoint():
+        await app.loop.create_task(shutdown_app())
+        return JSONResponse({
+            "message": "Shutting down!"
+        })
+
+    return app
+
+
 class ChainlitAppTunnel(DbTunnel):
 
     def _imports(self):
@@ -92,12 +112,22 @@ class ChainlitAppTunnel(DbTunnel):
 
             url_base_path = self._proxy_settings.url_base_path
             port = self._port
+
+            # try to shutdown app
+            import requests
+            try:
+                resp = requests.post(f"http://localhost:{port}/shutdown")
+                print(resp.text)
+            except Exception as e:
+                print(e)
+
             def run_uvicorn_app():
                 print("Starting proxy server...")
                 app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
                     url_base_path,
                     service_port=chainlit_service_port_no_share
                 ))
+                app = add_shutdown(app)
                 import uvicorn
                 uvicorn.run(host="0.0.0.0", port=int(port), app=app, root_path=url_base_path)
 
