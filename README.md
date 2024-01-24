@@ -33,10 +33,15 @@ Easy way to test out llm chatbots; look in examples/gradio
 **You must use A10 GPU instances or higher**
 
 * [x] Mistral-7b [gradio-chat-mistral7b-demo.py](examples%2Fgradio%2Fgradio-chat-mistral7b-demo.py)
+* [x] Mixtral 8x7B [chainlit-foundation-model.py](examples%2Fchainlit%2Fchainlit-foundation-model.py)
 * [ ] Llama-2-7b
 * [ ] mpt-7b
 * [ ] Streaming support (vllm, etc.)
 * [x] Typewriter effect
+
+### Custom ASGI Proxy Support for UIs that do not support proxy root paths
+
+Forked ASGI proxy for chainlit UI rendering
 
 ### Tunnel Support:
 
