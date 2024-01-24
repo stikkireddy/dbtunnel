@@ -8,7 +8,7 @@ from vendor.asgiproxy.simple_proxy import make_simple_proxy_app
 import uvicorn
 
 HOST = "localhost"
-PORT = 8000
+PORT = 5050
 
 ROOT_PATH = "/example/world"
 
@@ -46,11 +46,7 @@ def _modify_js_bundle(content, root_path):
     list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io"]
     for uri in list_of_uris:
         content = content.replace(uri, root_path.encode("utf-8") + uri)
-    # regex: \{path:"\*",element:y\.jsx\(.*,\{replace:!0,to:"\/"\}\)\} for rewrite url
-    # regex:
-    # modify the url rewrite for the root path
     content = _modify_js_content_root_rewrite(content)
-    # content = content.replace(b'{path:"*",element:E.jsx(MC,{replace:!0,to:"/"})}', b'{path:"*",element:E.jsx(PGt,{})}')
     return content
 
 def _modify_settings(content, root_path):
