@@ -90,6 +90,10 @@ def extract_hostname(url):
     return parsed_url.hostname
 
 
+def ensure_scheme(url):
+    if not url.startswith("http") and not url.startswith("https"):
+        return f"https://{url}"
+
 class DbTunnel(abc.ABC):
 
     def __init__(self, port: int, flavor: Flavor):
@@ -129,7 +133,7 @@ class DbTunnel(abc.ABC):
     def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
             print("Setting databricks host from context")
-            os.environ["DATABRICKS_HOST"] = host or get_repl_context().browserHostName
+            os.environ["DATABRICKS_HOST"] = host or ensure_scheme(get_repl_context().browserHostName)
         if os.getenv("DATABRICKS_TOKEN") is None:
             print("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
