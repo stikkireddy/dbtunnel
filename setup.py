@@ -69,6 +69,8 @@ setup(
         ],
         "chainlit": [
             "chainlit",
+            "nest_asyncio",
+            "uvicorn",
         ],
         "asgiproxy": [
             "aiohttp",
