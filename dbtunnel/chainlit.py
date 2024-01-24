@@ -6,10 +6,10 @@ from dbtunnel.tunnels import DbTunnel, ProxySettings
 from dbtunnel.utils import execute, make_asgi_proxy_app
 
 
-def make_chainlit_local_proxy_config(proxy_settings: ProxySettings, service_host: str = "0.0.0.0",
+def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.0.0.0",
                                      service_port: int = 9989):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
-    proxy_root_path = proxy_settings.url_base_path
+    proxy_root_path = url_base_path
 
     def _modify_root(content, root_path):
         list_of_uris = [b"/assets", b"/public"]
@@ -88,20 +88,28 @@ class ChainlitAppTunnel(DbTunnel):
 
         chainlit_service_port_no_share = 9090
         if self._share is False:
-            # subprocess.run(f"kill -9 $(lsof -t -i:{chainlit_service_port_no_share})", capture_output=True, shell=True)
+            subprocess.run(f"kill -9 $(lsof -t -i:{chainlit_service_port_no_share})", capture_output=True, shell=True)
 
+            url_base_path = self._proxy_settings.url_base_path
+            port = self._port
             def run_uvicorn_app():
                 print("Starting proxy server...")
                 app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
-                    self._proxy_settings,
+                    url_base_path,
                     service_port=chainlit_service_port_no_share
                 ))
                 import uvicorn
-                uvicorn.run(host="0.0.0.0", port=int(self._port), app=app, root_path=self._proxy_settings.url_base_path)
+                uvicorn.run(host="0.0.0.0", port=int(port), app=app, root_path=url_base_path)
 
-            uvicorn_thread = threading.Thread(target=run_uvicorn_app)
-            # Start the thread in the background
-            uvicorn_thread.start()
+            # use process instead of thread to avoid uvicorn error
+            import multiprocessing
+            uvicorn_process = multiprocessing.get_context('spawn').Process(target=run_uvicorn_app)
+
+            # Start the process
+            uvicorn_process.start()
+            # uvicorn_thread = threading.Thread(target=run_uvicorn_app)
+            # # Start the thread in the background
+            # uvicorn_thread.start()
 
         print("Starting chainlit...", flush=True)
 
