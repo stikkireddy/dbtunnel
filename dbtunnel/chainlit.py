@@ -12,7 +12,7 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
     proxy_root_path = url_base_path
 
     def _modify_root(content, root_path):
-        list_of_uris = [b"/assets", b"/public"]
+        list_of_uris = [b"/assets", b"/public", b"/favicon"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.encode("utf-8") + uri)
         return content
@@ -38,11 +38,17 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
             return content
 
     def _modify_js_bundle(content, root_path):
-        list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io"]
+        list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io", b"/logo", b"/readme"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.encode("utf-8") + uri)
+        
+        content = content.replace(b'to:"/",',f'to:"{root_path}",'.encode("utf-8"))
         content = _modify_js_content_root_rewrite(content)
         return content
+    
+    def modify_css_bundle(content):
+        add_to_end = b" #new-chat-button {display: none;}"
+        return content + add_to_end
 
     def _modify_settings(content, root_path):
         list_of_uris = [b"/public"]
@@ -64,7 +70,8 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
                 "/": modify_root,
                 "": modify_root,
                 "*assets/index-*.js": modify_js_bundle,
-                "*settings": modify_settings
+                "*settings": modify_settings,
+                "*assets/index-*.css": modify_css_bundle,
             }
         },
     )()
