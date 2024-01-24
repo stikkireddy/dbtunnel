@@ -69,6 +69,11 @@ setup(
         ],
         "chainlit": [
             "chainlit",
+        ],
+        "asgiproxy": [
+            "aiohttp",
+            "starlette",
+            "websockets"
         ]
     },
     classifiers=[
