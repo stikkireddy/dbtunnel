@@ -88,7 +88,7 @@ class ChainlitAppTunnel(DbTunnel):
 
         chainlit_service_port_no_share = 9090
         if self._share is False:
-            subprocess.run(f"kill -9 $(lsof -t -i:{chainlit_service_port_no_share})", capture_output=True, shell=True)
+            # subprocess.run(f"kill -9 $(lsof -t -i:{chainlit_service_port_no_share})", capture_output=True, shell=True)
 
             def run_uvicorn_app():
                 print("Starting proxy server...")
