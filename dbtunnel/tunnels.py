@@ -15,6 +15,15 @@ class ProxySettings:
     url_base_path: str
     url_base_path_no_port: Optional[str] = None
 
+    def get_proxy_url(self, ensure_ends_with_slash=False):
+        """
+        For certain apps that use relative paths like "assets/index-*.js" we need to ensure that the url ends
+        with a slash.
+        """
+        if ensure_ends_with_slash is True:
+            return self.proxy_url.rstrip("/") + "/"
+        return self.proxy_url
+
 
 def get_cloud(context: Dict[str, Any]) -> str:
     # TODO: support gcp
@@ -56,7 +65,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 Flavor = Literal[
     "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
-    "code-server", "chainlit"]
+    "code-server", "chainlit", "shiny-python"]
 
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86

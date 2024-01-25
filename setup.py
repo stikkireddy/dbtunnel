@@ -76,6 +76,10 @@ setup(
             "aiohttp",
             "starlette",
             "websockets"
+        ],
+        "shiny": [
+            "shiny",
+            "nest_asyncio",
         ]
     },
     classifiers=[
