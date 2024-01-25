@@ -12,6 +12,7 @@ from dbtunnel.shiny import ShinyPythonAppTunnel
 from dbtunnel.solara import SolaraAppTunnel
 from dbtunnel.stable_diffusion_ui import StableDiffusionUITunnel
 from dbtunnel.streamlit import StreamlitTunnel
+from dbtunnel.utils import ctx, compute_utils
 
 
 class AppTunnels:
