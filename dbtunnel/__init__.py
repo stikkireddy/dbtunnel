@@ -6,12 +6,16 @@ from dbtunnel.fastapi import FastApiAppTunnel
 from dbtunnel.flask import FlaskAppTunnel
 from dbtunnel.gradio import GradioAppTunnel
 from dbtunnel.nicegui import NiceGuiAppTunnel
+from dbtunnel.shiny import ShinyPythonAppTunnel
 from dbtunnel.solara import SolaraAppTunnel
 from dbtunnel.stable_diffusion_ui import StableDiffusionUITunnel
 from dbtunnel.streamlit import StreamlitTunnel
 
 
 class AppTunnels:
+    """
+    This class is used to create tunnels to different apps. It is the user facing api should not have breaking changes.
+    """
 
     @staticmethod
     def fastapi(app, port: int = 8080):
@@ -59,5 +63,8 @@ class AppTunnels:
     def chainlit(script_path: str, cwd: str = None, port: int = 8000):
         return ChainlitAppTunnel(script_path, cwd=cwd, port=port)
 
+    @staticmethod
+    def shiny_python(app, port: int = 8080):
+        return ShinyPythonAppTunnel(app, port)
 
 dbtunnel = AppTunnels()

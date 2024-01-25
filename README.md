@@ -20,13 +20,31 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [x] flask: [flask-app.py](examples%2Fflask%2Fflask-app.py)
 * [x] dash: [dask-example.py](examples%2Fdash%2Fdask-example.py)
 * [x] bokeh: [bokeh-example.py](examples%2Fbokeh%2Fbokeh-example.py)
-* [ ] posit
+* [x] shiny for python
 * [ ] panel
 * [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
-* [x] chainlit: [chainlit.py](examples%2Fchainlit%2Fchainlit.py)
+* [x] chainlit: [chainlit-foundation-model-rag-example.py](examples%2Fchainlit%2Fchainlit-foundation-model-rag-example.py)
 * [x] code-server on repos [code-server-example.py](examples%2Fcode-server%2Fcode-server-example.py)
 
 Easy way to test out llm chatbots; look in examples/gradio
+
+### File or Directory Support
+
+This is to support decoupling your UI code from your databricks notebooks. 
+Usually will have a script_path argument instead of directly passing your "app" object. This is convenient for 
+shipping your app outside of a notebook.
+
+* [ ] fastapi: [fastapi.py](examples%2Ffastapi%2Ffastapi.py)
+* [ ] gradio: [gradio-demo.py](examples%2Fgradio%2Fgradio-demo.py)
+* [x] streamlit: [streamlit_example.py](examples%2Fstreamlit%2Fstreamlit_example.py)
+* [ ] nicegui: [nicegui-example.py](examples%2Fnicegui%2Fnicegui-example.py)
+* [ ] flask: [flask-app.py](examples%2Fflask%2Fflask-app.py)
+* [ ] dash: [dask-example.py](examples%2Fdash%2Fdask-example.py)
+* [x] bokeh: [bokeh-example.py](examples%2Fbokeh%2Fbokeh-example.py)
+* [ ] shiny for python
+* [ ] panel
+* [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
+* [x] chainlit: [chainlit-foundation-model-rag-example.py](examples%2Fchainlit%2Fchainlit-foundation-model-rag-example.py)
 
 ### Chatbot Support
 

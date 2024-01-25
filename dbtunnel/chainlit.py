@@ -25,11 +25,8 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
         # find the default root function
         matches = re.findall(regex_pattern, decoded_content)
         if matches:
-            print(matches)
             jsx_call = matches[0][0]
             func = matches[0][1]  # Assuming there is only one match
-
-            print(f"Found match: {jsx_call}, {func}")
             modified_code = re.sub(r'\{path:"\*",element:.*\.jsx\(.*,\{replace:!0,to:"\/"\}\)\}',
                                    f'{{path:"*",element:{jsx_call}.jsx({func},{{}})}}', decoded_content)
             return modified_code.encode("utf-8")
