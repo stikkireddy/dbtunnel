@@ -103,7 +103,14 @@ async def retriever(content: str):
     await cl.sleep(0)
     processed_prompt = await loop.run_in_executor(None, rag_prompt.invoke, content)
     return [{"content": msg.content, "role": "user"} for msg in processed_prompt.to_messages()]
-    # return "Response from the tool!"
+
+
+@cl.on_chat_start
+async def on_start():
+    msg = cl.Message(content="Please ask any questions about the book of Frankenstein; Or, The Modern Prometheus by Mary Wollstonecraft Shelley. Example: Who is Frankenstein's monster?")
+
+    await msg.send()
+
 
 @cl.on_message
 async def main(message: cl.Message):
