@@ -1,6 +1,5 @@
 import subprocess
 
-from utils import ctx, compute_utils
 from dbtunnel.bokeh import BokehTunnel
 from dbtunnel.chainlit import ChainlitAppTunnel
 from dbtunnel.code_server import CodeServerTunnel
@@ -13,7 +12,7 @@ from dbtunnel.shiny import ShinyPythonAppTunnel
 from dbtunnel.solara import SolaraAppTunnel
 from dbtunnel.stable_diffusion_ui import StableDiffusionUITunnel
 from dbtunnel.streamlit import StreamlitTunnel
-from dbtunnel.utils import DatabricksContext, ComputeUtils
+from dbtunnel.utils import ctx, compute_utils
 
 
 class AppTunnels:
