@@ -20,7 +20,7 @@ Easy way to test the following things on a databricks cluster and notebooks
 * [x] flask: [flask-app.py](examples%2Fflask%2Fflask-app.py)
 * [x] dash: [dask-example.py](examples%2Fdash%2Fdask-example.py)
 * [x] bokeh: [bokeh-example.py](examples%2Fbokeh%2Fbokeh-example.py)
-* [x] shiny for python
+* [x] shiny for python: [shiny-python-example.py](examples%2Fshiny-python%2Fshiny-python-example.py)
 * [ ] panel
 * [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
 * [x] chainlit: [chainlit-foundation-model-rag-example.py](examples%2Fchainlit%2Fchainlit-foundation-model-rag-example.py)
