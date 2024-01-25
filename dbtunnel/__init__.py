@@ -1,3 +1,5 @@
+import subprocess
+
 from dbtunnel.bokeh import BokehTunnel
 from dbtunnel.chainlit import ChainlitAppTunnel
 from dbtunnel.code_server import CodeServerTunnel
@@ -16,6 +18,10 @@ class AppTunnels:
     """
     This class is used to create tunnels to different apps. It is the user facing api should not have breaking changes.
     """
+
+    @staticmethod
+    def kill_port(port: int):
+        subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
 
     @staticmethod
     def fastapi(app, port: int = 8080):
@@ -66,5 +72,6 @@ class AppTunnels:
     @staticmethod
     def shiny_python(app, port: int = 8080):
         return ShinyPythonAppTunnel(app, port)
+
 
 dbtunnel = AppTunnels()
