@@ -14,8 +14,6 @@ except ImportError:
     print("databricks-sdk not installed. Please install databricks-sdk to use this feature")
     raise
 
-from dbtunnel.tunnels import get_current_username
-
 
 @contextmanager
 def process_file(input_path):
