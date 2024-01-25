@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
-from dbtunnel.utils import pkill
+from dbtunnel.utils import pkill, ctx
 
 
 @dataclass
@@ -67,31 +67,8 @@ Flavor = Literal[
     "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
     "code-server", "chainlit", "shiny-python"]
 
-
-# from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
-def get_repl_context() -> Any:
-    """Gets the notebook REPL context if running inside a Databricks notebook.
-    Returns None otherwise.
-    """
-    try:
-        from dbruntime.databricks_repl_context import get_context
-
-        return get_context()
-    except ImportError:
-        raise ImportError(
-            "Cannot access dbruntime, not running inside a Databricks notebook."
-        )
-
-
 def get_current_username() -> str:
-    try:
-        from databricks.sdk import WorkspaceClient
-        return WorkspaceClient(host=get_repl_context().browserHostName,
-                               token=get_repl_context().apiToken).current_user.me().user_name
-    except ImportError:
-        raise ImportError(
-            "Please install databricks-sdk."
-        )
+    return ctx.current_user_name
 
 
 def extract_hostname(url):
@@ -142,10 +119,10 @@ class DbTunnel(abc.ABC):
     def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
             print("Setting databricks host from context")
-            os.environ["DATABRICKS_HOST"] = host or ensure_scheme(get_repl_context().browserHostName)
+            os.environ["DATABRICKS_HOST"] = host or ensure_scheme(ctx.host)
         if os.getenv("DATABRICKS_TOKEN") is None:
             print("Setting databricks token from context")
-            os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
+            os.environ["DATABRICKS_TOKEN"] = token or ctx.token
 
         return self
 
@@ -153,11 +130,11 @@ class DbTunnel(abc.ABC):
         if os.getenv("DATABRICKS_SERVER_HOSTNAME") is None:
             print("Setting databricks server hostname from context")
             os.environ["DATABRICKS_SERVER_HOSTNAME"] = server_hostname or extract_hostname(
-                get_repl_context().browserHostName)
+                ctx.host)
 
         if os.getenv("DATABRICKS_TOKEN") is None:
             print("Setting databricks token from context")
-            os.environ["DATABRICKS_TOKEN"] = token or get_repl_context().apiToken
+            os.environ["DATABRICKS_TOKEN"] = token or ctx.token
 
         if os.getenv("DATABRICKS_HTTP_PATH") is None:
             print("Setting databricks warehouse http path")

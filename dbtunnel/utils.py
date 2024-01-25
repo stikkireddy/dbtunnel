@@ -3,7 +3,18 @@ import shutil
 import subprocess
 import tempfile
 from contextlib import contextmanager
-from typing import List
+from dataclasses import dataclass
+from fnmatch import fnmatch
+from functools import cached_property
+from typing import List, Any
+
+try:
+    from databricks.sdk import WorkspaceClient
+except ImportError:
+    print("databricks-sdk not installed. Please install databricks-sdk to use this feature")
+    raise
+
+from dbtunnel.tunnels import get_current_username
 
 
 @contextmanager
@@ -64,3 +75,76 @@ def make_asgi_proxy_app(proxy_config):
     proxy_context = ProxyContext(proxy_config)
     app = make_simple_proxy_app(proxy_context)
     return app
+
+
+# from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
+def get_repl_context() -> Any:
+    """Gets the notebook REPL context if running inside a Databricks notebook.
+    Returns None otherwise.
+    """
+    try:
+        from dbruntime.databricks_repl_context import get_context
+
+        return get_context()
+    except ImportError:
+        raise ImportError(
+            "Cannot access dbruntime, not running inside a Databricks notebook."
+        )
+
+
+class DatabricksContext:
+
+    def __init__(self):
+        self._repl_ctx = get_repl_context()
+
+    @cached_property
+    def host(self) -> str:
+        return self._repl_ctx.browserHostName
+
+    @cached_property
+    def token(self) -> str:
+        return self._repl_ctx.apiToken
+
+    @cached_property
+    def current_user_name(self) -> str:
+        return WorkspaceClient(host=self.host,
+                               token=self.token).current_user.me().user_name
+
+
+@dataclass
+class WarehouseDetails:
+    hostname: str
+    http_path: str
+    name: str
+    serverless: bool
+
+
+class ComputeUtils:
+
+    def __init__(self, dbx_ctx: DatabricksContext):
+        self._ctx = dbx_ctx
+        self._client = WorkspaceClient(host=self._ctx.host, token=self._ctx.token)
+
+    def get_warehouse(self, name_glob: str, ignore_case: bool = True, serverless_only: bool = True):
+        for warehouse in self._client.warehouses.list():
+            if serverless_only is True and warehouse.enable_serverless_compute is False:
+                continue  # Skip warehouses that do not have serverless compute enabled
+
+            if ignore_case is True:
+                name_match = fnmatch(warehouse.name.lower(), name_glob.lower())
+            else:
+                name_match = fnmatch(warehouse.name, name_glob)
+
+            if name_match is False:
+                continue  # Skip warehouses that do not match the name_glob
+
+            hostname = warehouse.odbc_params.hostname
+            http_path = warehouse.odbc_params.path
+            return WarehouseDetails(hostname,
+                                    http_path,
+                                    warehouse.name,
+                                    warehouse.enable_serverless_compute)
+
+
+ctx = DatabricksContext()
+compute_utils = ComputeUtils(ctx)
