@@ -17,3 +17,7 @@ script_path = current_directory + "/streamlit_example.py"
 from dbtunnel import dbtunnel
 
 dbtunnel.streamlit(script_path).run()
+
+# COMMAND ----------
+
+
