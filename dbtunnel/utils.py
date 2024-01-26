@@ -191,6 +191,10 @@ def get_logger(
     format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
     datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
 ):
+
+    # disable py4j logger
+    logging.getLogger("py4j").setLevel(logging.ERROR)
+
     cluster_logging_file_path = cluster_logging_file_path or Path(f"logs/{app_name}.log")
     if not cluster_logging_file_path.parent.exists():
         cluster_logging_file_path.parent.mkdir(parents=True)

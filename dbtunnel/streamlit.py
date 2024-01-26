@@ -13,7 +13,7 @@ class StreamlitTunnel(DbTunnel):
             import streamlit
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have nest_asyncio, streamlit installed. \n"
+            self._log.info("ImportError: Make sure you have nest_asyncio, streamlit installed. \n"
                   "pip install nest_asyncio streamlit")
             raise e
 
@@ -23,15 +23,15 @@ class StreamlitTunnel(DbTunnel):
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         import nest_asyncio
         nest_asyncio.apply()
-        print(f"Use this link: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
         with process_file(self._script_path) as file_path:
             self.run_streamlit(file_path, self._port)
 
-    @staticmethod
-    def run_streamlit(path, port):
+
+    def run_streamlit(self, path, port):
         import os
         import subprocess
         my_env = os.environ.copy()
@@ -40,7 +40,7 @@ class StreamlitTunnel(DbTunnel):
         my_env["STREAMLIT_SERVER_HEADLESS"] = "true"
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
 
-        print(f"Deploying streamlit app at path: {path} on port: {port}")
+        self._log.info(f"Deploying streamlit app at path: {path} on port: {port}")
         cmd = [
             "streamlit",
             "run",
@@ -50,9 +50,9 @@ class StreamlitTunnel(DbTunnel):
             "--server.fileWatcherType",
             "none"
         ]
-        print(f"Running command: {' '.join(cmd)}")
+        self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
-            print(path, end="")
+            self._log.info(path.rstrip("\n"))
 
 
 def streamlit_patch_websockets_v2():
