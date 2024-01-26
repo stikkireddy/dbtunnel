@@ -56,7 +56,8 @@ def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
     if ensure_python_site_packages:
         ensure_python_path(env)
     import subprocess
-    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env, cwd=cwd)
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True, env=env, cwd=cwd)
     for stdout_line in iter(popen.stdout.readline, ""):
         yield stdout_line
     popen.stdout.close()
