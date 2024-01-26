@@ -191,13 +191,13 @@ def get_logger(
     format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
     datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
 ):
-
-    # disable py4j logger
-    logging.getLogger("py4j").setLevel(logging.ERROR)
-
-    cluster_logging_file_path = cluster_logging_file_path or Path(f"logs/{app_name}.log")
+    # driver instead of workspace path to not deal with WSFS
+    home_dir = os.path.expanduser('~')
+    cluster_logging_file_path = cluster_logging_file_path or Path(f"{home_dir}/logs/{app_name}/{app_name}.log")
     if not cluster_logging_file_path.parent.exists():
         cluster_logging_file_path.parent.mkdir(parents=True)
+
+    logger = logging.getLogger(app_name)
 
     # Create a queue
     log_queue = queue.Queue(maxsize=100)
@@ -242,10 +242,13 @@ def get_logger(
     )
 
     # Add the QueueListener handler to the root logger
-    logging.root.addHandler(queue_handler)
+    logger.addHandler(queue_handler)
 
     # Set the log level for the root logger
-    logging.root.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+
+    # disable py4j logger
+    logging.getLogger("py4j").setLevel(logging.ERROR)
 
     # Start the QueueListener
     queue_listener.start()
@@ -253,7 +256,7 @@ def get_logger(
     # Register a function to stop the QueueListener on program exit
     atexit.register(queue_listener.stop)
 
-    return logging.getLogger(app_name)
+    return logger
 
 
 ctx = DatabricksContext()
