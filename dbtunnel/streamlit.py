@@ -44,7 +44,7 @@ class StreamlitTunnel(DbTunnel):
         import nest_asyncio
         nest_asyncio.apply()
 
-        streamlit_service_port = 8080
+        streamlit_service_port = 9908
         port = self._port
         url_base_path = self._proxy_settings.url_base_path
 
