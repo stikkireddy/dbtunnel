@@ -20,7 +20,7 @@ class GradioAppTunnel(DbTunnel):
 
     def _run(self):
         self.display()
-        self._log.info("Starting server...", flush=True)
+        self._log.info("Starting server...")
         from fastapi import FastAPI
         import uvicorn
         import gradio as gr

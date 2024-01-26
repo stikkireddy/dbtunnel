@@ -20,7 +20,7 @@ class FlaskAppTunnel(DbTunnel):
 
     def _run(self):
         self.display()
-        self._log.info("Starting server...", flush=True)
+        self._log.info("Starting server...")
         import uvicorn
         from fastapi import FastAPI
         from fastapi.middleware.wsgi import WSGIMiddleware
