@@ -82,7 +82,7 @@ class ChainlitAppTunnel(DbTunnel):
             import chainlit
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have chainlit installed. \n"
+            self._log.info("ImportError: Make sure you have chainlit installed. \n"
                   "pip install chainlit nest_asyncio")
             raise e
 
@@ -100,7 +100,7 @@ class ChainlitAppTunnel(DbTunnel):
             nest_asyncio.apply()
 
             def run_uvicorn_app():
-                print("Starting proxy server...")
+                self._log.info("Starting proxy server...")
                 app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
                     url_base_path,
                     service_port=chainlit_service_port_no_share
@@ -115,9 +115,9 @@ class ChainlitAppTunnel(DbTunnel):
             uvicorn_thread = threading.Thread(target=run_uvicorn_app)
             # Start the thread in the background
             uvicorn_thread.start()
-            print(f"Use this link to access the UI in Databricks: \n{self._proxy_settings.proxy_url}")
+            self._log.info(f"Use this link to access the UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
-        print("Starting chainlit...", flush=True)
+        self._log.info("Starting chainlit...")
 
         my_env = os.environ.copy()
 
@@ -127,9 +127,9 @@ class ChainlitAppTunnel(DbTunnel):
         else:
             cmd = ["chainlit", "run", self._chainlit_script_path, "-h", "--host", "0.0.0.0", "--port", f"{self._port}"]
 
-        print(f"Running command: {' '.join(cmd)}")
+        self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env, cwd=self._cwd):
-            print(path, end="")
+            self._log.info(path)
 
     def __init__(self, chainlit_script_path: str, cwd: str = None, port: int = 8000):
         super().__init__(port, "chainlit")

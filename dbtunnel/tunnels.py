@@ -70,6 +70,7 @@ Flavor = Literal[
     "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
     "code-server", "chainlit", "shiny-python"]
 
+
 def get_current_username() -> str:
     return ctx.current_user_name
 
@@ -82,6 +83,10 @@ def extract_hostname(url):
 def ensure_scheme(url):
     if not url.startswith("http") and not url.startswith("https"):
         return f"https://{url}"
+
+
+# TODO: Make the with commands lazy so the logger and other
+#  init methods are executed first before the with commands
 
 class DbTunnel(abc.ABC):
 
@@ -102,7 +107,7 @@ class DbTunnel(abc.ABC):
         self._share = False
         self._share_information = None
         self._share_trigger_callback = None
-        self._log: Optional[logging.Logger] = None # initialize logger during the run method
+        self._log: logging.Logger = get_logger()  # initialize logger during the run method
 
     @abc.abstractmethod
     def _imports(self):
@@ -122,26 +127,26 @@ class DbTunnel(abc.ABC):
 
     def inject_auth(self, host: str = None, token: str = None):
         if os.getenv("DATABRICKS_HOST") is None:
-            print("Setting databricks host from context")
+            self._log.info("Setting databricks host from context")
             os.environ["DATABRICKS_HOST"] = host or ensure_scheme(ctx.host)
         if os.getenv("DATABRICKS_TOKEN") is None:
-            print("Setting databricks token from context")
+            self._log.info("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or ctx.token
 
         return self
 
     def inject_sql_warehouse(self, http_path: str, server_hostname: str = None, token: str = None):
         if os.getenv("DATABRICKS_SERVER_HOSTNAME") is None:
-            print("Setting databricks server hostname from context")
+            self._log.info("Setting databricks server hostname from context")
             os.environ["DATABRICKS_SERVER_HOSTNAME"] = server_hostname or extract_hostname(
                 ctx.host)
 
         if os.getenv("DATABRICKS_TOKEN") is None:
-            print("Setting databricks token from context")
+            self._log.info("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or ctx.token
 
         if os.getenv("DATABRICKS_HTTP_PATH") is None:
-            print("Setting databricks warehouse http path")
+            self._log.info("Setting databricks warehouse http path")
             os.environ["DATABRICKS_HTTP_PATH"] = http_path
 
         return self
@@ -150,7 +155,7 @@ class DbTunnel(abc.ABC):
         for k, v in kwargs.items():
             if type(v) != str:
                 raise ValueError(f"Value for environment variable {k} must be a string")
-            print(f"Setting environment variable {k}")
+            self._log.info(f"Setting environment variable {k}")
             os.environ[k] = v
         return self
 
@@ -188,8 +193,6 @@ class DbTunnel(abc.ABC):
         3. Then spawn processes.
         :return:
         """
-        if self._log is None:
-            self.with_custom_logger()
         self._imports()
         if self._share is True and self._share_trigger_callback is not None:
             import nest_asyncio
@@ -220,11 +223,11 @@ class DbTunnel(abc.ABC):
         ngrok_tunnel = NgrokTunnel(self._port,
                                    ngrok_tunnel_auth_token,
                                    ngrok_api_token,
+                                   self._log,
                                    basic_auth=basic_auth,
                                    domain=domain,
                                    oauth_provider=oauth_provider,
-                                   oauth_allow_domains=oauth_allow_domains,
-                                   )
+                                   oauth_allow_domains=oauth_allow_domains)
 
         def ngrok_callback():
             if kill_all_tunnel_sessions is True:

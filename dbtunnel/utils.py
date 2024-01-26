@@ -44,7 +44,6 @@ def process_file(input_path):
 
 def ensure_python_path(env):
     import sys
-    import os
     from pathlib import Path
     for python_version_dir in (Path(sys.executable).parent.parent / "lib").iterdir():
         site_packages = str(python_version_dir / "site-packages")

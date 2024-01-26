@@ -13,7 +13,7 @@ class BokehTunnel(DbTunnel):
             import nest_asyncio
             import bokeh
         except ImportError as e:
-            print("ImportError: Make sure you have nest_asyncio, bokeh installed. \n"
+            self._log.info("ImportError: Make sure you have nest_asyncio, bokeh installed. \n"
                   "pip install nest_asyncio bokeh")
             raise e
 
@@ -23,10 +23,10 @@ class BokehTunnel(DbTunnel):
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         import nest_asyncio
         nest_asyncio.apply()
-        print(f"Use this link: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
         with process_file(self._script_path) as file_path:
             self.run_bokeh(file_path, self._port)
 
@@ -37,7 +37,7 @@ class BokehTunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
         # static assets otherwise get served by root and the root path is not allowed!
         my_env["BOKEH_RESOURCES"] = "cdn"
-        print(f"Deploying {self._flavor} app at path: {path} on port: {port}")
+        self._log.info(f"Deploying {self._flavor} app at path: {path} on port: {port}")
         server_path_prefix = self._proxy_settings.url_base_path.rstrip('/').lstrip('/')
         cmd = ["bokeh",
                "serve",
@@ -48,6 +48,6 @@ class BokehTunnel(DbTunnel):
                # "--prefix",
                # server_path_prefix
                ]
-        print(f"Running command: {' '.join(cmd)}")
+        self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
-            print(path, end="")
+            self._log.info(path)
