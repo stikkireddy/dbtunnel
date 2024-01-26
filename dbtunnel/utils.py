@@ -56,11 +56,15 @@ def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
     if ensure_python_site_packages:
         ensure_python_path(env)
     import subprocess
-    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             universal_newlines=True, env=env, cwd=cwd)
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env, cwd=cwd)
     for stdout_line in iter(popen.stdout.readline, ""):
         yield stdout_line
+
+    for stderr_line in iter(popen.stderr.readline, ""):  # Iterate over stderr
+        yield stderr_line
+
     popen.stdout.close()
+    popen.stderr.close()  # Close stderr
     return_code = popen.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
