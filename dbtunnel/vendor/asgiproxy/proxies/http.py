@@ -80,12 +80,13 @@ async def convert_proxy_response_to_user_response(
     new_headers = headers_to_client
 
     # Forked code
-    if response_content is not None and len(response_content) > 0:
+    if response_content is not None and len(response_content) > 0 and context.config.modify_content is not None:
         for path_pattern, modify_func in context.config.modify_content.items():
             if fnmatch.fnmatch(scope["path"], path_pattern):
                 response_content = modify_func(response_content)
                 new_headers = {k:v for k, v in headers_to_client.items()}
                 new_headers["Content-Length"] = str(len(response_content))
+
     return Response(
         content=response_content,
         status_code=status_to_client,
