@@ -1,10 +1,34 @@
+import os
+import threading
+
 from dbtunnel.tunnels import DbTunnel
+from dbtunnel.utils import make_asgi_proxy_app, execute
+
+
+def make_gradio_local_proxy_config(service_host: str = "0.0.0.0",
+                                   service_port: int = 9989):
+    from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+
+    config = type(
+        "Config",
+        (BaseURLProxyConfigMixin, ProxyConfig),
+        {
+            "upstream_base_url": f"http://{service_host}:{service_port}",
+            "rewrite_host_header": f"{service_host}:{service_port}",
+        },
+    )()
+    return config
 
 
 class GradioAppTunnel(DbTunnel):
 
-    def __init__(self, gradio_app, port: int = 8080):
+    def __init__(self, gradio_app,
+                 app_path: str,
+                 cwd: str = None,
+                 port: int = 8080):
         super().__init__(port, flavor="gradio")
+        self._app_path = app_path
+        self._cwd = cwd
         self._gradio_app = gradio_app
 
     def _imports(self):
@@ -15,10 +39,52 @@ class GradioAppTunnel(DbTunnel):
             import nest_asyncio
         except ImportError as e:
             self._log.info("ImportError: Make sure you have fastapi, nest_asyncio uvicorn, gradio installed. \n"
-                  "pip install fastapi nest_asyncio uvicorn gradio")
+                           "pip install fastapi nest_asyncio uvicorn gradio")
             raise e
 
     def _run(self):
+        if self._gradio_app is not None:
+            self._run_app()
+            return
+
+        self._log.info("Starting server...")
+        import nest_asyncio
+        nest_asyncio.apply()
+
+        gradio_service_port = 9908
+        port = self._port
+        url_base_path = self._proxy_settings.url_base_path
+
+        def run_uvicorn_app():
+            self._log.info("Starting proxy server...")
+            app = make_asgi_proxy_app(make_gradio_local_proxy_config(
+                service_port=gradio_service_port
+            ))
+            import uvicorn
+            return uvicorn.run(host="0.0.0.0",
+                               loop="asyncio",
+                               port=int(port),
+                               app=app,
+                               root_path=url_base_path)
+
+        uvicorn_thread = threading.Thread(target=run_uvicorn_app)
+        # Start the thread in the background
+        uvicorn_thread.start()
+        self._log.info(f"Use this link to access the Streamlit UI in Databricks: \n{self._proxy_settings.proxy_url}")
+
+        self._log.info("Starting gradio...")
+
+        my_env = os.environ.copy()
+        my_env["GRADIO_SERVER_PORT"] = str(gradio_service_port)
+        my_env["GRADIO_SERVER_NAME"] = "0.0.0.0"
+
+        cmd = ["python", self._app_path]
+
+        self._log.info(f"Running command: {' '.join(cmd)}")
+        for path in execute(cmd, my_env, cwd=self._cwd):
+            self._log.info(path)
+
+    def _run_app(self):
         self.display()
         self._log.info("Starting server...")
         from fastapi import FastAPI

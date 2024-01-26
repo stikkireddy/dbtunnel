@@ -29,8 +29,13 @@ class AppTunnels:
         return FastApiAppTunnel(app, port)
 
     @staticmethod
-    def gradio(app, port: int = 8080):
-        return GradioAppTunnel(app, port)
+    def gradio(app=None,
+               path: str = None,
+               cwd: str = None,
+               port: int = 8080):
+        if app is None and path is None:
+            raise ValueError("Either gradio app object or path must be provided")
+        return GradioAppTunnel(app, path, cwd, port)
 
     @staticmethod
     def nicegui(app, storage_secret: str = "", port: int = 8080):
