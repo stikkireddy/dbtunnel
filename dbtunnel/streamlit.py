@@ -1,5 +1,22 @@
+import threading
+
 from dbtunnel.tunnels import DbTunnel
-from dbtunnel.utils import process_file, execute
+from dbtunnel.utils import process_file, execute, make_asgi_proxy_app
+
+
+def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
+                                      service_port: int = 9989):
+    from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+
+    config = type(
+        "Config",
+        (BaseURLProxyConfigMixin, ProxyConfig),
+        {
+            "upstream_base_url": f"http://{service_host}:{service_port}",
+            "rewrite_host_header": f"{service_host}:{service_port}",
+        },
+    )()
+    return config
 
 
 class StreamlitTunnel(DbTunnel):
@@ -14,7 +31,7 @@ class StreamlitTunnel(DbTunnel):
             import nest_asyncio
         except ImportError as e:
             self._log.info("ImportError: Make sure you have nest_asyncio, streamlit installed. \n"
-                  "pip install nest_asyncio streamlit")
+                           "pip install nest_asyncio streamlit")
             raise e
 
     def _display_url(self):
@@ -26,10 +43,30 @@ class StreamlitTunnel(DbTunnel):
         self._log.info("Starting server...")
         import nest_asyncio
         nest_asyncio.apply()
-        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
-        with process_file(self._script_path) as file_path:
-            self.run_streamlit(file_path, self._port)
 
+        streamlit_service_port = 8080
+        port = self._port
+        url_base_path = self._proxy_settings.url_base_path
+
+        def run_uvicorn_app():
+            self._log.info("Starting proxy server...")
+            app = make_asgi_proxy_app(make_streamlit_local_proxy_config(
+                service_port=streamlit_service_port
+            ))
+            import uvicorn
+            return uvicorn.run(host="0.0.0.0",
+                               loop="asyncio",
+                               port=int(port),
+                               app=app,
+                               root_path=url_base_path)
+
+        uvicorn_thread = threading.Thread(target=run_uvicorn_app)
+        # Start the thread in the background
+        uvicorn_thread.start()
+        self._log.info(f"Use this link to access the Streamlit UI in Databricks: \n{self._proxy_settings.proxy_url}")
+
+        with process_file(self._script_path) as file_path:
+            self.run_streamlit(file_path, streamlit_service_port)
 
     def run_streamlit(self, path, port):
         import os
