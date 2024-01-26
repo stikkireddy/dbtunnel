@@ -36,6 +36,9 @@ class CodeServerTunnel(DbTunnel):
     def _run(self):
         import subprocess
 
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}?folder={self._dir_path}")
+        self._log.info("It may take a 15-30 seconds for the code server to start up.")
+
         self._log.info("Installing code server")
         url = "https://code-server.dev/install.sh"
         # Equivalent Python subprocess command with piping
@@ -50,7 +53,6 @@ class CodeServerTunnel(DbTunnel):
 
         # "VSCODE_PROXY_URI=“./driver-proxy/o/<id>/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
         self._log.info(f"Deploying code server on port: {self._port}")
-        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}?folder={self._dir_path}")
         cmd = ["code-server",
                "--bind-addr",
                f"0.0.0.0:{self._port}",
