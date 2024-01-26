@@ -98,6 +98,14 @@ class WebSocketProxyContext:
 async def proxy_websocket(
     *, context: ProxyContext, scope: Scope, receive: Receive, send: Send
 ) -> None:
+
+    # query params are important for socket.io for websocket upgrade
+    root_path = scope["root_path"]
+    if scope["path"].startswith(root_path):
+        scope["path"] = scope["path"].replace(root_path, "")
+    if scope.get("query_string") is not None:
+        scope["path"] = scope["path"] + "?" + scope["query_string"].decode("utf-8")
+
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
     try:
