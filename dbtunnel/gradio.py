@@ -1,3 +1,4 @@
+import functools
 import os
 import threading
 
@@ -5,9 +6,21 @@ from dbtunnel.tunnels import DbTunnel
 from dbtunnel.utils import make_asgi_proxy_app, execute
 
 
-def make_gradio_local_proxy_config(service_host: str = "0.0.0.0",
+def make_gradio_local_proxy_config(
+                    url_base_path,
+        service_host: str = "0.0.0.0",
                                    service_port: int = 9989):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+
+    def _modify_js_bundle(content, root_path):
+        list_of_uris = [b"/theme.css"]
+        for uri in list_of_uris:
+            content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
+
+        content = content.replace(b'to:"/",', f'to:"{root_path}",'.encode("utf-8"))
+        return content
+
+    modify_js_bundle = functools.partial(_modify_js_bundle, root_path=url_base_path)
 
     config = type(
         "Config",
@@ -15,6 +28,9 @@ def make_gradio_local_proxy_config(service_host: str = "0.0.0.0",
         {
             "upstream_base_url": f"http://{service_host}:{service_port}",
             "rewrite_host_header": f"{service_host}:{service_port}",
+            "modify_content": {
+                "*assets/index-*.js": modify_js_bundle,
+            }
         },
     )()
     return config
@@ -58,6 +74,7 @@ class GradioAppTunnel(DbTunnel):
         def run_uvicorn_app():
             self._log.info("Starting proxy server...")
             app = make_asgi_proxy_app(make_gradio_local_proxy_config(
+                url_base_path,
                 service_port=gradio_service_port
             ))
             import uvicorn
