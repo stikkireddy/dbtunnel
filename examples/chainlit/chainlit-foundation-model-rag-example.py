@@ -7,6 +7,10 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install -U langchain==0.1.3 aiohttp sqlalchemy
+
+# COMMAND ----------
+
 dbutils.library.restartPython()
 
 # COMMAND ----------
