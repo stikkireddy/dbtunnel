@@ -1,11 +1,14 @@
 import abc
+import datetime
 import json
+import logging
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
-from dbtunnel.utils import pkill, ctx
+from dbtunnel.utils import pkill, ctx, get_logger
 
 
 @dataclass
@@ -99,6 +102,7 @@ class DbTunnel(abc.ABC):
         self._share = False
         self._share_information = None
         self._share_trigger_callback = None
+        self._log: Optional[logging.Logger] = None # initialize logger during the run method
 
     @abc.abstractmethod
     def _imports(self):
@@ -150,14 +154,49 @@ class DbTunnel(abc.ABC):
             os.environ[k] = v
         return self
 
+    def with_custom_logger(self, *,
+                           logger: Optional[logging.Logger] = None,
+                           app_name: str = "dbtunnel",
+                           cluster_logging_file_path: Optional[Path] = None,
+                           logging_archive_folder: Optional[Path] = None,
+                           rotate_when: Literal["S", "M", "H", "D", "midnight"] = "H",
+                           rotate_interval: int = 1,
+                           backup_count: int = 3,
+                           at_time: Optional[datetime.time] = None,
+                           format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
+                           datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
+                           ):
+        if logger is not None:
+            self._log = logger
+            return self
+        self._log = get_logger(app_name=app_name,
+                               cluster_logging_file_path=cluster_logging_file_path,
+                               logging_archive_folder=logging_archive_folder,
+                               rotate_when=rotate_when,
+                               rotate_interval=rotate_interval,
+                               backup_count=backup_count,
+                               at_time=at_time,
+                               format_str=format_str,
+                               datefmt_str=datefmt_str)
+        return self
+
     def run(self):
+        """
+        Lifecycle:
+        1. initialize logger
+        2. import libraries and return error immediately if things are not installed
+        3. Then spawn processes.
+        :return:
+        """
+        if self._log is None:
+            self.with_custom_logger()
         self._imports()
         if self._share is True and self._share_trigger_callback is not None:
             import nest_asyncio
             nest_asyncio.apply()
             self._share_trigger_callback()
         if self._share is True and self._share_information is not None:
-            print(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
+            self._log.info(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
@@ -176,7 +215,7 @@ class DbTunnel(abc.ABC):
             try:
                 pkill("ngrok")
             except KeyError:
-                print("no running tunnels to kill")
+                self._log.error("no running tunnels to kill")
         from dbtunnel.ngrok import NgrokTunnel
         ngrok_tunnel = NgrokTunnel(self._port,
                                    ngrok_tunnel_auth_token,

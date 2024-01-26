@@ -1,12 +1,20 @@
+import atexit
+import datetime
+import logging
 import os
+import queue
 import shutil
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from functools import cached_property
-from typing import List, Any
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
+from typing import List, Any, Optional, Literal
+from typing_extensions import override
 
 try:
     from databricks.sdk import WorkspaceClient
@@ -142,6 +150,106 @@ class ComputeUtils:
                                     http_path,
                                     warehouse.name,
                                     warehouse.enable_serverless_compute)
+
+
+class ArchivingTimedRotatingFileHandler(TimedRotatingFileHandler):
+    """
+    Rotate the files in the cluster native FS and during the rotate time period copy the file to
+    a volume so there are no issues with file system shenanigans with FUSE implementation
+    """
+
+    def __init__(self, archive_path: Path, filename, when='h', interval=1, backupCount=0,
+                 encoding=None, delay=False, utc=False, atTime=None,
+                 errors=None):
+        super().__init__(filename, when, interval, backupCount, encoding, delay, utc, atTime, errors)
+        self._archive_path = archive_path
+        if not self._archive_path.exists():
+            self._archive_path.mkdir(parents=True)
+
+    @override
+    def rotate(self, source, dest):
+        super().rotate(source, dest)
+        # copy dest file to archive path
+        self.archive_log_file(dest)
+
+    def archive_log_file(self, log_file):
+        try:
+            shutil.copy(log_file, str(self._archive_path))
+        except Exception as e:
+            print(f"Unable to archive log file: {e}")
+
+
+def get_logger(
+    *,
+    app_name: str = "dbtunnel",
+    cluster_logging_file_path: Optional[Path] = None,
+    logging_archive_folder: Optional[Path] = None,
+    rotate_when: Literal["S", "M", "H", "D", "midnight"] = "H",
+    rotate_interval: int = 1,
+    backup_count: int = 3,
+    at_time: Optional[datetime.time] = None,
+    format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
+    datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
+):
+    cluster_logging_file_path = cluster_logging_file_path or Path(f"logs/{app_name}.log")
+    if not cluster_logging_file_path.parent.exists():
+        cluster_logging_file_path.parent.mkdir(parents=True)
+
+    # Create a queue
+    log_queue = queue.Queue(maxsize=100)
+
+    # Create a formatter for 'simple' and 'detailed' formats
+    detailed_formatter = logging.Formatter(
+        format_str,
+        datefmt=datefmt_str
+    )
+
+    # Create a StreamHandler for 'stderr' with 'simple' formatter
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.INFO)
+    stdout_handler.setFormatter(detailed_formatter)
+
+    # Create a RotatingFileHandler for 'file' with 'detailed' formatter
+    time_rotate_cfg = {
+        "when": rotate_when,
+        "interval": rotate_interval,
+        "backupCount": backup_count,
+        "atTime": at_time,
+    }
+    if logging_archive_folder is not None and logging_archive_folder.exists():
+        file_handler = ArchivingTimedRotatingFileHandler(
+            archive_path=logging_archive_folder,
+            filename=cluster_logging_file_path,
+            **time_rotate_cfg
+        )
+    else:
+        file_handler = logging.handlers.TimedRotatingFileHandler(
+            filename=cluster_logging_file_path,
+            **time_rotate_cfg
+        )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(detailed_formatter)
+
+    # Create a QueueListener with the created queue and the added handlers
+    queue_handler = logging.handlers.QueueHandler(log_queue)
+
+    queue_listener = logging.handlers.QueueListener(
+        log_queue, stdout_handler, file_handler, respect_handler_level=True
+    )
+
+    # Add the QueueListener handler to the root logger
+    logging.root.addHandler(queue_handler)
+
+    # Set the log level for the root logger
+    logging.root.setLevel(logging.DEBUG)
+
+    # Start the QueueListener
+    queue_listener.start()
+
+    # Register a function to stop the QueueListener on program exit
+    atexit.register(queue_listener.stop)
+
+    return logging.getLogger(app_name)
 
 
 ctx = DatabricksContext()
