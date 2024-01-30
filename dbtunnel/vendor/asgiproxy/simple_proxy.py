@@ -108,6 +108,7 @@ async def handle_token_auth(
 
 def make_simple_proxy_app(
         proxy_context: ProxyContext,
+        login_timeout: int = 3600,
         *,
         proxy_http_handler=proxy_http,
         proxy_websocket_handler=proxy_websocket,
@@ -121,7 +122,7 @@ def make_simple_proxy_app(
     """
 
     # we assume there is not going to be more than 250k users
-    cache = TTLCache(maxsize=250000, ttl=360) # just dont use it if auth not needed
+    cache = TTLCache(maxsize=250000, ttl=login_timeout) # just dont use it if auth not needed
 
     async def app(scope: Scope, receive: Receive, send: Send):  # noqa: ANN201
 
