@@ -35,8 +35,8 @@ Usually will have a script_path argument instead of directly passing your "app" 
 shipping your app outside of a notebook.
 
 * [ ] fastapi: [fastapi.py](examples%2Ffastapi%2Ffastapi.py)
-* [ ] gradio: [gradio-demo.py](examples%2Fgradio%2Fgradio-demo.py)
-* [x] streamlit: [streamlit_example.py](examples%2Fstreamlit%2Fstreamlit_example.py)
+* [x] gradio: [gradio-demo.py](examples%2Fgradio%2Fgradio-demo.py)
+* [x] streamlit: [streamlit_example.py](examples%2Fstreamlit%2Fstreamlit_example.py): This is partially implemented, it only works with one file. 
 * [ ] nicegui: [nicegui-example.py](examples%2Fnicegui%2Fnicegui-example.py)
 * [ ] flask: [flask-app.py](examples%2Fflask%2Fflask-app.py)
 * [ ] dash: [dask-example.py](examples%2Fdash%2Fdask-example.py)
