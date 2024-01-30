@@ -85,7 +85,8 @@ async def handle_token_auth(
         password = content.get("token")
         # user accidentally clicks form
         if user is None and password is None:
-            resp = RedirectResponse(url=root_path, status_code=302)
+            # this is root path with respect to asgi app root path
+            resp = RedirectResponse(url="/", status_code=302)
             return await resp(scope, receive, send)
         # invalid user
         if validate_user(workspace_url, user, password) is False:
@@ -94,7 +95,8 @@ async def handle_token_auth(
             )
             return await resp(scope, receive, send)
         cache[user] = password
-        resp = RedirectResponse(url=root_path, status_code=302)
+        # this is root path with respect to asgi app root path
+        resp = RedirectResponse(url="/", status_code=302)
         return await resp(scope, receive, send)
 
     if cache.get(dbx_ctx_headers.user_name) is None:
