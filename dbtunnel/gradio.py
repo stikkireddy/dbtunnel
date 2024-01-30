@@ -13,7 +13,7 @@ def make_gradio_local_proxy_config(
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
 
     def _modify_js_bundle(content, root_path):
-        list_of_uris = [b"/theme.css"]
+        list_of_uris = [b"/theme.css", b"/info", b"/queue", b"/assets"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
 
@@ -30,6 +30,8 @@ def make_gradio_local_proxy_config(
             "rewrite_host_header": f"{service_host}:{service_port}",
             "modify_content": {
                 "*assets/index-*.js": modify_js_bundle,
+                # some reason gradio also has caps index bundled calling out explicitly
+                "*assets/Index-*.js": modify_js_bundle,
             }
         },
     )()
