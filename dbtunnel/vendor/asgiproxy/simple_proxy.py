@@ -26,7 +26,7 @@ def get_login_content(*,
 
     with open(str(login_html_path), "r") as file:
         # root path needs right slash trimmed off
-        return file.read().format(workspace_url=workspace_url, root_path=root_path.rstrip("/") user_name=user_name)
+        return file.read().format(workspace_url=workspace_url, root_path=root_path.rstrip("/"), user_name=user_name)
 
 
 @dataclass
