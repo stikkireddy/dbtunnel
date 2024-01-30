@@ -107,6 +107,18 @@ def get_repl_context() -> Any:
         )
 
 
+def get_workspace_host_via_spark_config() -> Optional[str]:
+    try:
+        from pyspark.sql import SparkSession
+
+        # databricks notebook and jobs will already have spark sessions
+        spark = SparkSession.getActiveSession()
+        return spark.conf.get("spark.databricks.workspaceUrl")
+    except Exception:
+        print("Not running inside a Databricks notebook or job, unable to get workspace url from spark session.")
+        return None
+
+
 class DatabricksContext:
 
     def __init__(self):
@@ -114,11 +126,18 @@ class DatabricksContext:
 
     @cached_property
     def host(self) -> str:
-        return self._repl_ctx.browserHostName
+        if hasattr(self._repl_ctx, "browserHostName"):
+            return self._repl_ctx.browserHostName
+        spark_conf_ws_url = get_workspace_host_via_spark_config()
+        if spark_conf_ws_url is not None:
+            return spark_conf_ws_url
+        raise ValueError("Unable to get workspace host from REPL context or spark config")
 
     @cached_property
     def token(self) -> str:
-        return self._repl_ctx.apiToken
+        if hasattr(self._repl_ctx, "apiToken"):
+            return self._repl_ctx.apiToken
+        raise ValueError("Unable to get token from REPL context")
 
     @cached_property
     def current_user_name(self) -> str:
@@ -189,16 +208,16 @@ class ArchivingTimedRotatingFileHandler(TimedRotatingFileHandler):
 
 
 def get_logger(
-    *,
-    app_name: str = "dbtunnel",
-    cluster_logging_file_path: Optional[Path] = None,
-    logging_archive_folder: Optional[Path] = None,
-    rotate_when: Literal["S", "M", "H", "D", "midnight"] = "H",
-    rotate_interval: int = 1,
-    backup_count: int = 3,
-    at_time: Optional[datetime.time] = None,
-    format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
-    datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
+        *,
+        app_name: str = "dbtunnel",
+        cluster_logging_file_path: Optional[Path] = None,
+        logging_archive_folder: Optional[Path] = None,
+        rotate_when: Literal["S", "M", "H", "D", "midnight"] = "H",
+        rotate_interval: int = 1,
+        backup_count: int = 3,
+        at_time: Optional[datetime.time] = None,
+        format_str: str = "[%(asctime)s] [%(levelname)s] {%(module)s.py:%(funcName)s:%(lineno)d} - %(message)s",
+        datefmt_str: str = "%Y-%m-%dT%H:%M:%S%z"
 ):
     # driver instead of workspace path to not deal with WSFS
     home_dir = os.path.expanduser('~')
@@ -249,6 +268,10 @@ def get_logger(
     queue_listener = logging.handlers.QueueListener(
         log_queue, stdout_handler, file_handler, respect_handler_level=True
     )
+
+    # incase this is reinitialized remove all handlers
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
 
     # Add the QueueListener handler to the root logger
     logger.addHandler(queue_handler)
