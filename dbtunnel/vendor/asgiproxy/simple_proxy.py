@@ -13,6 +13,8 @@ from dbtunnel.vendor.asgiproxy.proxies.http import proxy_http
 from dbtunnel.vendor.asgiproxy.proxies.websocket import proxy_websocket
 
 
+DB_TUNNEL_LOGIN_PATH = "/dbtunnel/login"
+
 @functools.lru_cache(maxsize=0)
 def get_login_content(*,
                       root_path: str,
@@ -26,7 +28,10 @@ def get_login_content(*,
 
     with open(str(login_html_path), "r") as file:
         # root path needs right slash trimmed off
-        return file.read().format(workspace_url=workspace_url, root_path=root_path.rstrip("/"), user_name=user_name)
+        return file.read().format(workspace_url=workspace_url,
+                                  root_path=root_path.rstrip("/"),
+                                  login_path=DB_TUNNEL_LOGIN_PATH,
+                                  user_name=user_name)
 
 
 @dataclass
@@ -72,7 +77,7 @@ async def handle_token_auth(
                     root_path=root_path
                 )
 
-    if scope["path"] == "/dbtunnel/login":
+    if scope["path"] == DB_TUNNEL_LOGIN_PATH:
         request = Request(scope, receive)
         content = await request.form()
         user = content.get("userName") or dbx_ctx_headers.user_name
