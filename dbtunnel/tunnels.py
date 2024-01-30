@@ -160,9 +160,9 @@ class DbTunnel(abc.ABC):
             os.environ[k] = v
         return self
 
-    def with_simple_auth(self):
-        self._basic_tunnel_auth["simple_auth"] = True
-        self._basic_tunnel_auth["simple_auth_workspace_url"] = ctx.host
+    def with_token_auth(self):
+        self._basic_tunnel_auth["token_auth"] = True
+        self._basic_tunnel_auth["token_auth_workspace_url"] = ctx.host
         return self
 
     def with_custom_logger(self, *,

@@ -54,14 +54,14 @@ def validate_user(url: str, user: str, token: str) -> bool:
     except Exception:
         return False
 
-async def handle_simple_auth(
+async def handle_token_auth(
         proxy_context: ProxyContext,
         cache: TTLCache,
         scope: Scope,
         send: Send,
         receive: Receive):
 
-    workspace_url = proxy_context.config.simple_auth_workspace_url
+    workspace_url = proxy_context.config.token_auth_workspace_url
     root_path = scope["root_path"]
     dbx_ctx_headers = get_databricks_user_header(scope)
     login_page_content = get_login_content(
@@ -120,8 +120,8 @@ def make_simple_proxy_app(
         if scope["type"] == "lifespan":
             return None  # We explicitly do nothing here for this simple app.
 
-        if proxy_context.config.simple_auth_workspace_url is not None and proxy_context.config.simple_auth is True:
-            resp = await handle_simple_auth(proxy_context, cache, scope, send, receive)
+        if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True:
+            resp = await handle_token_auth(proxy_context, cache, scope, send, receive)
             if resp is not None:
                 return resp
 
