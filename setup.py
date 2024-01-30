@@ -10,6 +10,9 @@ setup(
     description="Run app and get cluster proxy url for it in databricks clusters",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    package_data={
+        'dbtunnel': ['**/*.html'],
+    },
     url="https://github.com/stikkireddy/dbtunnel",
     packages=find_packages(),
     install_requires=[],

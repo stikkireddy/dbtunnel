@@ -108,6 +108,7 @@ class DbTunnel(abc.ABC):
         self._share_information = None
         self._share_trigger_callback = None
         self._log: logging.Logger = get_logger()  # initialize logger during the run method
+        self._basic_tunnel_auth = {"simple_auth": False, "simple_auth_workspace_url": None}
 
     @abc.abstractmethod
     def _imports(self):
@@ -157,6 +158,11 @@ class DbTunnel(abc.ABC):
                 raise ValueError(f"Value for environment variable {k} must be a string")
             self._log.info(f"Setting environment variable {k}")
             os.environ[k] = v
+        return self
+
+    def with_simple_auth(self):
+        self._basic_tunnel_auth["simple_auth"] = True
+        self._basic_tunnel_auth["simple_auth_workspace_url"] = ctx.host
         return self
 
     def with_custom_logger(self, *,

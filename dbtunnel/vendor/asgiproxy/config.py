@@ -85,6 +85,8 @@ class BaseURLProxyConfigMixin:
     upstream_base_url: str
     rewrite_host_header: Optional[str] = None
     modify_content: Optional[Dict[str, Callable[[str], str]]] = None
+    simple_auth: Optional[bool] = False
+    simple_auth_workspace_url: Optional[str] = None
 
     def get_upstream_url(self, scope: Scope) -> str:
         return urljoin(self.upstream_base_url, scope["path"])

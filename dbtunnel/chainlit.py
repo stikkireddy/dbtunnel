@@ -1,3 +1,4 @@
+import copy
 import functools
 import re
 import threading
@@ -6,10 +7,15 @@ from dbtunnel.tunnels import DbTunnel, ProxySettings
 from dbtunnel.utils import execute, make_asgi_proxy_app
 
 
-def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.0.0.0",
-                                     service_port: int = 9989):
+def make_chainlit_local_proxy_config(
+                                     url_base_path: str,
+                                     service_host: str = "0.0.0.0",
+                                     service_port: int = 9989,
+                                     auth_config: dict = None
+):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
     proxy_root_path = url_base_path
+    auth_config = auth_config or {}
 
     def _modify_root(content, root_path):
         list_of_uris = [b"/assets", b"/public", b"/favicon"]
@@ -69,7 +75,8 @@ def make_chainlit_local_proxy_config(url_base_path: str, service_host: str = "0.
                 "*assets/index-*.js": modify_js_bundle,
                 "*settings": modify_settings,
                 "*assets/index-*.css": modify_css_bundle,
-            }
+            },
+            **auth_config
         },
     )()
     return config
@@ -99,11 +106,15 @@ class ChainlitAppTunnel(DbTunnel):
             import nest_asyncio
             nest_asyncio.apply()
 
+            # avoid serialization issues by passing self object; TODO: clean this up
+            auth_config = copy.deepcopy(self._basic_tunnel_auth)
+
             def run_uvicorn_app():
                 self._log.info("Starting proxy server...")
                 app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
                     url_base_path,
-                    service_port=chainlit_service_port_no_share
+                    service_port=chainlit_service_port_no_share,
+                    auth_config=auth_config
                 ))
                 import uvicorn
                 return uvicorn.run(host="0.0.0.0",
