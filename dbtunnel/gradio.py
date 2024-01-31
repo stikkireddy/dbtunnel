@@ -7,9 +7,10 @@ from dbtunnel.utils import make_asgi_proxy_app, execute
 
 
 def make_gradio_local_proxy_config(
-                    url_base_path,
+        url_base_path,
         service_host: str = "0.0.0.0",
-                                   service_port: int = 9989):
+        service_port: int = 9989,
+        auth_config: dict = None):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
 
     def _modify_js_bundle(content, root_path):
@@ -32,7 +33,8 @@ def make_gradio_local_proxy_config(
                 "*assets/index-*.js": modify_js_bundle,
                 # some reason gradio also has caps index bundled calling out explicitly
                 "*assets/Index-*.js": modify_js_bundle,
-            }
+            },
+            **auth_config,
         },
     )()
     return config
@@ -77,7 +79,8 @@ class GradioAppTunnel(DbTunnel):
             self._log.info("Starting proxy server...")
             app = make_asgi_proxy_app(make_gradio_local_proxy_config(
                 url_base_path,
-                service_port=gradio_service_port
+                service_port=gradio_service_port,
+                auth_config=self._basic_tunnel_auth
             ))
             import uvicorn
             return uvicorn.run(host="0.0.0.0",

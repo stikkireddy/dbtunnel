@@ -5,7 +5,8 @@ from dbtunnel.utils import process_file, execute, make_asgi_proxy_app
 
 
 def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
-                                      service_port: int = 9989):
+                                      service_port: int = 9989,
+                                      auth_config: dict = None):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
 
     config = type(
@@ -14,6 +15,7 @@ def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
         {
             "upstream_base_url": f"http://{service_host}:{service_port}",
             "rewrite_host_header": f"{service_host}:{service_port}",
+            **auth_config,
         },
     )()
     return config
@@ -51,7 +53,8 @@ class StreamlitTunnel(DbTunnel):
         def run_uvicorn_app():
             self._log.info("Starting proxy server...")
             app = make_asgi_proxy_app(make_streamlit_local_proxy_config(
-                service_port=streamlit_service_port
+                service_port=streamlit_service_port,
+                auth_config=self._basic_tunnel_auth
             ))
             import uvicorn
             return uvicorn.run(host="0.0.0.0",
