@@ -62,7 +62,7 @@ class StreamlitTunnel(DbTunnel):
                                loop="asyncio",
                                port=int(port),
                                app=app,
-                               root_path=url_base_path.rstrip("/"))
+                               root_path=url_base_path)
 
         uvicorn_thread = threading.Thread(target=run_uvicorn_app)
         # Start the thread in the background
