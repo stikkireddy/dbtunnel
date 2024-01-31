@@ -1,3 +1,4 @@
+import copy
 import functools
 import os
 import threading
@@ -76,12 +77,14 @@ class GradioAppTunnel(DbTunnel):
         port = self._port
         url_base_path = self._proxy_settings.url_base_path
 
+        auth_config = copy.deepcopy(self._basic_tunnel_auth)
+
         def run_uvicorn_app():
             self._log.info("Starting proxy server...")
             app = make_asgi_proxy_app(make_gradio_local_proxy_config(
                 url_base_path,
                 service_port=gradio_service_port,
-                auth_config=self._basic_tunnel_auth
+                auth_config=auth_config
             ))
             import uvicorn
             return uvicorn.run(host="0.0.0.0",
