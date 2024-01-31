@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install dbtunnel[gradio]
+# MAGIC %pip install dbtunnel[asgiproxy,gradio]
 
 # COMMAND ----------
 
