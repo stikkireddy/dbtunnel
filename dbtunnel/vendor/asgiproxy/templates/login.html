@@ -1,0 +1,84 @@
+<html lang="en" class="!dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <title>DBTunnel Login</title>
+</head>
+<body>
+<div class="flex text-white items-center justify-center min-h-screen bg-white dark:bg-gray-900">
+    <div class="rounded-lg border bg-card text-card-foreground shadow-lg min-w-[400px]" data-v0-t="card">
+        <form id="loginForm" action="{root_path}{login_path}" method="post">
+            <div class="flex flex-col space-y-1.5 p-6">
+                <h3 class="font-semibold whitespace-nowrap tracking-tight text-2xl">DBTunnel Login</h3>
+                <p class="text-sm text-muted-foreground">Enter your workspace url, email, and token to login.</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-2">
+                    <label
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            for="workspaceUrl"
+                    >
+                        Workspace Url
+                    </label>
+                    <input
+                            class="flex h-10 w-full text-black rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            id="workspaceUrl"
+                            name="workspaceUrl"
+                            placeholder="Acme Inc"
+                            value="{workspace_url}"
+                            required
+                            disabled
+                    />
+                </div>
+                <div class="space-y-2">
+                    <label
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            for="userName"
+                    >
+                        Databricks Email
+                    </label>
+                    <input
+                            class="flex h-10 w-full text-black rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            id="userName"
+                            name="userName"
+                            placeholder="m@example.com"
+                            value="{user_name}"
+                            required
+                            disabled
+                    />
+                </div>
+                <div class="space-y-2">
+                    <label
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            for="token"
+                    >
+                        Databricks Token
+                    </label>
+                    <input
+                            class="flex h-10 w-full text-black rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            id="token"
+                            name="token"
+                            type="password"
+                            required
+                    />
+                </div>
+            </div>
+            <div class="flex items-center p-6">
+
+            <button
+                    type="submit"
+                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium
+    ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+    focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gray-700
+    text-primary-foreground hover:bg-gray-700/80 h-10 px-4 py-2 w-full">
+                Login
+            </button>
+
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

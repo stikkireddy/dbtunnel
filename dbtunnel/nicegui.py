@@ -15,13 +15,13 @@ class NiceGuiAppTunnel(DbTunnel):
             import nicegui
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have fastapi, nest_asyncio uvicorn, nicegui installed. \n"
+            self._log.info("ImportError: Make sure you have fastapi, nest_asyncio uvicorn, nicegui installed. \n"
                   "pip install fastapi nest_asyncio uvicorn nicegui")
             raise e
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         from fastapi import FastAPI
         import uvicorn
         app = FastAPI(root_path=self._proxy_settings.url_base_path.rstrip("/"))
@@ -45,7 +45,7 @@ class NiceGuiAppTunnel(DbTunnel):
 
         # Run the asyncio event loop instead of uvloop to enable re entrance
         import asyncio
-        print(f"Use this link: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
         asyncio.run(start())
 
     def _display_url(self):

@@ -49,7 +49,7 @@ with sql.connect(server_hostname = hostname,
     cursor.execute(f"""CREATE OR REPLACE TABLE {CATALOG}.{SCHEMA}.trips_example AS
 SELECT * FROM samples.nyctaxi.trips LIMIT 100;""")
   with connection.cursor() as cursor:
-    cursor.execute(f"""CREATE OR REPLACE TABLE {CATALOG}.{SCHEMA}.trips_feedback (
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {CATALOG}.{SCHEMA}.trips_feedback (
   email STRING,
   feedback STRING,
   datetime STRING

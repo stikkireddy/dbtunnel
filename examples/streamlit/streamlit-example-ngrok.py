@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install dbtunnel[streamlit,ngrok]
+# MAGIC %pip install dbtunnel[asgiproxy,streamlit,ngrok]
 
 # COMMAND ----------
 

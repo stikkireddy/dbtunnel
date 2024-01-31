@@ -14,13 +14,13 @@ class DashAppTunnel(DbTunnel):
             import dash
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have fastapi, nest_asyncio, dash and uvicorn installed;"
+            self._log.info("ImportError: Make sure you have fastapi, nest_asyncio, dash and uvicorn installed;"
                   "pip install fastapi nest_asyncio dash uvicorn")
             raise e
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         from fastapi import FastAPI
         import uvicorn
         from fastapi.middleware.wsgi import WSGIMiddleware
@@ -49,7 +49,7 @@ class DashAppTunnel(DbTunnel):
 
         # Run the asyncio event loop instead of uvloop to enable re entrance
         import asyncio
-        print(f"Use this link: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
         asyncio.run(start())
 
     def _display_url(self):

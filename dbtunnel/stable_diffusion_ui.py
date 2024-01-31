@@ -21,7 +21,7 @@ class StableDiffusionUITunnel(DbTunnel):
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         import requests
         import os
         script_url = "https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh"
@@ -61,9 +61,9 @@ class StableDiffusionUITunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
         if self.shared is False:
-            print(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
+            self._log.info(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
 
         cmd = ["bash", script_path, "-f", "--listen"]
-        print(f"Running command: {' '.join(cmd)}")
+        self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
-            print(path, end="")
+            self._log.info(path)

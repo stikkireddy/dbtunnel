@@ -36,11 +36,14 @@ class CodeServerTunnel(DbTunnel):
     def _run(self):
         import subprocess
 
-        print("Installing code server")
+        self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}?folder={self._dir_path}")
+        self._log.info("It may take a 15-30 seconds for the code server to start up.")
+
+        self._log.info("Installing code server")
         url = "https://code-server.dev/install.sh"
         # Equivalent Python subprocess command with piping
         subprocess.run(f'curl -fsSL {url} | sh', check=True, shell=True)
-        print("Installed code server")
+        self._log.info("Installed code server")
 
         import os
         import subprocess
@@ -49,13 +52,12 @@ class CodeServerTunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
         # "VSCODE_PROXY_URI=“./driver-proxy/o/<id>/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
-        print(f"Deploying code server on port: {self._port}")
-        print(f"Use this link: \n{self._proxy_settings.proxy_url}?folder={self._dir_path}")
+        self._log.info(f"Deploying code server on port: {self._port}")
         cmd = ["code-server",
                "--bind-addr",
                f"0.0.0.0:{self._port}",
                "--auth",
                "none"]
-        print(f"Running command: {' '.join(cmd)}")
+        self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
-            print(path, end="")
+            self._log.info(path)

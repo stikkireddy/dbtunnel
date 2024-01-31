@@ -12,13 +12,13 @@ class ShinyPythonAppTunnel(DbTunnel):
             import uvicorn
             import nest_asyncio
         except ImportError as e:
-            print("ImportError: Make sure you have shiny, nest_asyncio and uvicorn installed;"
+            self._log.info("ImportError: Make sure you have shiny, nest_asyncio and uvicorn installed;"
                   "pip install fastapi nest_asyncio uvicorn")
             raise e
 
     def _run(self):
         self.display()
-        print("Starting server...", flush=True)
+        self._log.info("Starting server...")
         import uvicorn
         import nest_asyncio
         nest_asyncio.apply()
@@ -34,7 +34,7 @@ class ShinyPythonAppTunnel(DbTunnel):
 
         # Run the asyncio event loop instead of uvloop to enable re entrance
         import asyncio
-        print(f"Use this link: \n{self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}")
+        self._log.info(f"Use this link: \n{self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}")
         asyncio.run(start())
 
     def _display_url(self):
