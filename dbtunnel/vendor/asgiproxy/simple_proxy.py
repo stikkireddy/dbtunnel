@@ -2,6 +2,8 @@ import functools
 from dataclasses import dataclass
 from pathlib import Path
 
+from enum import Enum
+
 from cachetools import TTLCache
 from databricks.sdk import WorkspaceClient
 from starlette.requests import Request
@@ -60,6 +62,11 @@ def validate_user(url: str, user: str, token: str) -> bool:
     except Exception:
         return False
 
+# Simple state machine, user is not in authloop when ttl cache has their email with token
+class AuthLoopState(Enum):
+    StillInAuthLoop = "STILL_IN_AUTH_LOOP"
+    NotInAuthLoop = "NOT_IN_AUTH_LOOP"
+
 async def handle_token_auth(
         proxy_context: ProxyContext,
         cache: TTLCache,
@@ -87,24 +94,31 @@ async def handle_token_auth(
         # user accidentally clicks form
         if user is None and password is None:
             # this is root path with respect to asgi app root path
-            resp = RedirectResponse(url=scope["root_path"], status_code=302)
-            return await resp(scope, receive, send)
+            resp = RedirectResponse(url="/", status_code=302)
+            await resp(scope, receive, send)
+            return AuthLoopState.StillInAuthLoop
         # invalid user
         if validate_user(workspace_url, user, password) is False:
             resp = Response(
                 content=login_page_content, status_code=401
             )
-            return await resp(scope, receive, send)
+            await resp(scope, receive, send)
+            return AuthLoopState.StillInAuthLoop
+
         cache[user] = password
         # this is root path with respect to asgi app root path
-        resp = RedirectResponse(url=scope["root_path"], status_code=302)
-        return await resp(scope, receive, send)
+        resp = RedirectResponse(url="/", status_code=302)
+        await resp(scope, receive, send)
+        return AuthLoopState.StillInAuthLoop
 
     if cache.get(dbx_ctx_headers.user_name) is None:
         resp = Response(
             content=login_page_content, status_code=200
         )
-        return await resp(scope, receive, send)
+        await resp(scope, receive, send)
+        return AuthLoopState.StillInAuthLoop
+    
+    return AuthLoopState.NotInAuthLoop
 
 
 def make_simple_proxy_app(
@@ -133,8 +147,10 @@ def make_simple_proxy_app(
 
         if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True:
             resp = await handle_token_auth(proxy_context, cache, scope, send, receive)
-            if resp is not None:
-                return resp
+            print("token_response", resp)
+            if resp == AuthLoopState.StillInAuthLoop:
+                print("token_response", resp)
+                return None
 
         if scope["type"] == "http" and proxy_http_handler:
             return await proxy_http_handler(
