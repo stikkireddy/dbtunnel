@@ -12,6 +12,7 @@ def make_gradio_local_proxy_config(
         service_port: int = 9989,
         auth_config: dict = None):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+    auth_config = auth_config or {}
 
     def _modify_js_bundle(content, root_path):
         list_of_uris = [b"/theme.css", b"/info", b"/queue", b"/assets"]

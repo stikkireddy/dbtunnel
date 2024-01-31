@@ -8,6 +8,7 @@ def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
                                       service_port: int = 9989,
                                       auth_config: dict = None):
     from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+    auth_config = auth_config or {}
 
     config = type(
         "Config",
@@ -61,7 +62,7 @@ class StreamlitTunnel(DbTunnel):
                                loop="asyncio",
                                port=int(port),
                                app=app,
-                               root_path=url_base_path)
+                               root_path=url_base_path.rstrip("/"))
 
         uvicorn_thread = threading.Thread(target=run_uvicorn_app)
         # Start the thread in the background
