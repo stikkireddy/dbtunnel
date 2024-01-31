@@ -78,6 +78,7 @@ setup(
         "asgiproxy": [
             "aiohttp",
             "starlette",
+            "uvicorn",
             "websockets"
         ],
         "shiny": [
