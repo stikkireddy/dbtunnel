@@ -51,7 +51,6 @@ def get_databricks_user_header(scope: Scope) -> DatabricksProxyHeaders:
     return hdrs
 
 def validate_user(url: str, user: str, token: str) -> bool:
-    print(url, user, token)
     try:
         w = WorkspaceClient(
             host=url,
@@ -77,7 +76,7 @@ async def handle_token_auth(
                     root_path=root_path
                 )
 
-    if scope["path"] == DB_TUNNEL_LOGIN_PATH:
+    if scope["path"].endswith(DB_TUNNEL_LOGIN_PATH):
         request = Request(scope, receive)
         content = await request.form()
         user = content.get("userName") or dbx_ctx_headers.user_name
@@ -86,7 +85,7 @@ async def handle_token_auth(
         # user accidentally clicks form
         if user is None and password is None:
             # this is root path with respect to asgi app root path
-            resp = RedirectResponse(url="/", status_code=302)
+            resp = RedirectResponse(url=scope["root_path"], status_code=302)
             return await resp(scope, receive, send)
         # invalid user
         if validate_user(workspace_url, user, password) is False:
@@ -96,7 +95,7 @@ async def handle_token_auth(
             return await resp(scope, receive, send)
         cache[user] = password
         # this is root path with respect to asgi app root path
-        resp = RedirectResponse(url="/", status_code=302)
+        resp = RedirectResponse(url=scope["root_path"], status_code=302)
         return await resp(scope, receive, send)
 
     if cache.get(dbx_ctx_headers.user_name) is None:
