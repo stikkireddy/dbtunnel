@@ -69,6 +69,8 @@ async def handle_token_auth(
 
     workspace_url = proxy_context.config.token_auth_workspace_url
     root_path = scope["root_path"]
+    if scope["path"].startswith(root_path):
+        scope["path"] = scope["path"].replace(root_path, "")
     dbx_ctx_headers = get_databricks_user_header(scope)
     login_page_content = get_login_content(
                     workspace_url=workspace_url,
@@ -76,7 +78,7 @@ async def handle_token_auth(
                     root_path=root_path
                 )
 
-    if scope["path"].endswith(DB_TUNNEL_LOGIN_PATH):
+    if scope["path"] == DB_TUNNEL_LOGIN_PATH:
         request = Request(scope, receive)
         content = await request.form()
         user = content.get("userName") or dbx_ctx_headers.user_name
