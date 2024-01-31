@@ -259,7 +259,7 @@ def get_logger(
             filename=cluster_logging_file_path,
             **time_rotate_cfg
         )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(detailed_formatter)
 
     # Create a QueueListener with the created queue and the added handlers
