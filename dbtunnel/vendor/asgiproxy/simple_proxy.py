@@ -111,12 +111,17 @@ async def handle_token_auth(
         await resp(scope, receive, send)
         return AuthLoopState.StillInAuthLoop
 
-    if cache.get(dbx_ctx_headers.user_name) is None:
+    # TODO add fernet encryption
+    token = cache.get(dbx_ctx_headers.user_name)
+    if token is None:
         resp = Response(
             content=login_page_content, status_code=200
         )
         await resp(scope, receive, send)
         return AuthLoopState.StillInAuthLoop
+
+    if token is not None:
+        scope["headers"].append((b"Authorization", f"Bearer {token}".encode("utf-8")))
     
     return AuthLoopState.NotInAuthLoop
 
