@@ -145,7 +145,8 @@ def make_simple_proxy_app(
         if scope["type"] == "lifespan":
             return None  # We explicitly do nothing here for this simple app.
 
-        if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True:
+        # we do not have enough information in websocket proxied headers to function auth
+        if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and scope["type"] == "http":
             resp = await handle_token_auth(proxy_context, cache, scope, send, receive)
             if resp == AuthLoopState.StillInAuthLoop:
                 return None
