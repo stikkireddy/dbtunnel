@@ -147,9 +147,7 @@ def make_simple_proxy_app(
 
         if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True:
             resp = await handle_token_auth(proxy_context, cache, scope, send, receive)
-            print("token_response", resp)
             if resp == AuthLoopState.StillInAuthLoop:
-                print("token_response", resp)
                 return None
 
         if scope["type"] == "http" and proxy_http_handler:
