@@ -46,6 +46,35 @@ shipping your app outside of a notebook.
 * [x] solara: [solara-example.py](examples%2Fsolara%2Fsolara-example.py)
 * [x] chainlit: [chainlit-foundation-model-rag-example.py](examples%2Fchainlit%2Fchainlit-foundation-model-rag-example.py)
 
+### Frameworks that leverage asgiproxy
+
+DBTunnel provides a proxy layer using asgiproxy fork to support UIs that do not support proxy root paths, etc. It also
+comes with a simple token based auth provider that only works on databricks to help you get access to user information.
+
+DBTunnel Proxy features:
+1. **Token based auth**: This is a simple token based auth that only works on databricks. 
+This token is saved in the app memory as a python TTLCache object. 
+2. **Support for frameworks that dont support proxies**: This proxy solution intercepts requests and rewrites js and html files 
+to allow support for hosting behind proxies that are dynamic. This is a temporary measure before researching a way of 
+exposing root path details. Then this step will be skipped. If you are running into issues with this please file a github issue.
+3. **Support for audit logging**: This is simply logging tracked users and saving them to a file. Its yet to be implemented. 
+4. **Support for frameworks that do not support root paths**
+5. **Inject auth headers**: This is to provide user information directly to your app via request object. Most frameworks
+support the access to request object to access headers, etc.
+
+* [ ] fastapi
+* [x] gradio
+* [x] streamlit 
+* [ ] nicegui
+* [ ] flask
+* [ ] dash
+* [ ] bokeh
+* [ ] shiny for python
+* [ ] panel
+* [ ] solara
+* [x] chainlit
+
+
 ### Chatbot Support
 
 **You must use A10 GPU instances or higher**
@@ -56,10 +85,6 @@ shipping your app outside of a notebook.
 * [ ] mpt-7b
 * [ ] Streaming support (vllm, etc.)
 * [x] Typewriter effect
-
-### Custom ASGI Proxy Support for UIs that do not support proxy root paths
-
-Forked ASGI proxy for chainlit UI rendering
 
 ### Tunnel Support:
 
