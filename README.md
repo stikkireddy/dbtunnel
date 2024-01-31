@@ -136,6 +136,13 @@ dbtunnel.streamlit("<script_path>").share_to_internet_via_ngrok(
 ).run()
 ```
 
+## Killing processes on a specific port
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.kill_port(<port number as int>)
+```
+
 
 ## Disclaimer
 dbtunnel is not developed, endorsed not supported by Databricks. It is provided as-is; no warranty is derived from using this package. For more details, please refer to the license.
