@@ -79,7 +79,8 @@ setup(
             "aiohttp",
             "starlette",
             "uvicorn",
-            "websockets"
+            "websockets",
+            "python-multipart"  # we are using this for auth check via form uploads
         ],
         "shiny": [
             "shiny",
