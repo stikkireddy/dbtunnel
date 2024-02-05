@@ -96,7 +96,7 @@ class GradioAppTunnel(DbTunnel):
         uvicorn_thread = threading.Thread(target=run_uvicorn_app)
         # Start the thread in the background
         uvicorn_thread.start()
-        self._log.info(f"Use this link to access the Streamlit UI in Databricks: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link to access the Gradio UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
         self._log.info("Starting gradio...")
 

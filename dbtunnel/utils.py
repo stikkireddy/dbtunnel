@@ -14,7 +14,6 @@ from functools import cached_property
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import List, Any, Optional, Literal
-from typing_extensions import override
 
 try:
     from databricks.sdk import WorkspaceClient
@@ -194,7 +193,6 @@ class ArchivingTimedRotatingFileHandler(TimedRotatingFileHandler):
         if not self._archive_path.exists():
             self._archive_path.mkdir(parents=True)
 
-    @override
     def rotate(self, source, dest):
         super().rotate(source, dest)
         # copy dest file to archive path
