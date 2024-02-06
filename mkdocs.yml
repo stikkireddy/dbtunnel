@@ -98,7 +98,7 @@ nav:
   - Getting Started:
     - Setup: getting-started/setup.md
     - Gradio: getting-started/gradio.md
-    - Chainlit: getting-started/chainlit.md
+    - Chainlit: getting-started/chainlit-instructions.md
     - Streamlit [TBD]: getting-started/streamlit.md
     - Bokeh [TBD]: getting-started/bokeh.md
     - FastAPI [TBD]: getting-started/fastapi.md
