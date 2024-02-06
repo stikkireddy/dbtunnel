@@ -14,4 +14,15 @@ upload:
 	@twine upload dist/*
 	@echo "Finished uploading to PyPI..."
 
+
+dev:
+	@echo "Installing development dependencies..."
+	@pip install ".[dev]"
+	@echo "Finished installing development dependencies..."
+
+serve-docs:
+	@echo "Serving documentation..."
+	@mkdocs serve
+
+
 .PHONY: build
