@@ -85,6 +85,10 @@ setup(
         "shiny": [
             "shiny",
             "nest_asyncio",
+        ],
+        "dev": [
+            "mkdocs-material",
+            "mkdocs-jupyter",
         ]
     },
     classifiers=[
