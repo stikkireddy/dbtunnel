@@ -1,6 +1,8 @@
 import functools
 import re
 
+from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
+
 
 def _make_chainlit_local_proxy_config(
         url_base_path: str,
@@ -83,7 +85,6 @@ def _make_streamlit_local_proxy_config(
         service_port: int = 9989,
         auth_config: dict = None
 ):
-    from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
     auth_config = auth_config or {}
 
     config = type(
@@ -104,7 +105,6 @@ def _make_gradio_local_proxy_config(
         service_port: int = 9989,
         auth_config: dict = None
 ):
-    from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
     auth_config = auth_config or {}
 
     def _modify_js_bundle(content, root_path):
