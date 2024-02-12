@@ -80,6 +80,7 @@ class GradioAppTunnel(DbTunnel):
         url_base_path = self._proxy_settings.url_base_path
 
         my_env = os.environ.copy()
+
         def run_uvicorn_app(my_env):
             proxy_cmd = ["python", "-m", "dbtunnel.vendor.asgiproxy",
                          "--port", str(port),
@@ -110,7 +111,7 @@ class GradioAppTunnel(DbTunnel):
         cmd = ["python", self._app_path]
 
         self._log.info(f"Running command: {' '.join(cmd)}")
-        for log_stmt in chain(execute(cmd, my_env, cwd=self._cwd), proxy_server_generator):
+        for log_stmt in execute(cmd, my_env, cwd=self._cwd):
             self._log.info(log_stmt)
 
         uvicorn_thread.join()
