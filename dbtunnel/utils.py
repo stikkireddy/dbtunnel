@@ -289,5 +289,10 @@ def get_logger(
     return logger
 
 
-ctx = DatabricksContext()
-compute_utils = ComputeUtils(ctx)
+try:
+    ctx = DatabricksContext()
+    compute_utils = ComputeUtils(ctx)
+except Exception as e:
+    logging.info("Unable to establish context, you are most likely running outside of databricks")
+    ctx = None
+    compute_utils = None
