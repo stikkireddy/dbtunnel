@@ -18,7 +18,8 @@ except ImportError:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", type=int, default=9989)
+    ap.add_argument("--port", type=int, required=True)
+    ap.add_argument("--service-port", type=int, required=True)
     ap.add_argument("--token-auth", type=bool, default=False)
     ap.add_argument("--token-auth-workspace-url", type=str, default=None)
     ap.add_argument("--host", type=str, default="0.0.0.0")
@@ -33,7 +34,7 @@ def main():
     config = framework_specific_proxy_config[args.framework](**{
         "url_base_path": args.url_base_path,
         "service_host": args.host,
-        "service_port": args.port,
+        "service_port": args.service_port,
         "auth_config": {"token_auth": args.token_auth, "token_auth_workspace_url": args.token_auth_workspace_url}
     })
     proxy_context = ProxyContext(config)

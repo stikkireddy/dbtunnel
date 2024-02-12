@@ -82,6 +82,7 @@ class GradioAppTunnel(DbTunnel):
         def run_uvicorn_app(my_env):
             proxy_cmd = ["python", "-m", "dbtunnel.vendor.asgiproxy",
                          "--port", str(port),
+                         "--service-port", str(gradio_service_port),
                          "--url-base-path", url_base_path,
                          "--framework", Frameworks.GRADIO]
             if self._basic_tunnel_auth["simple_auth"] is True:
