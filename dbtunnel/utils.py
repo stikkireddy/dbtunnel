@@ -289,5 +289,7 @@ def get_logger(
     return logger
 
 
-ctx = DatabricksContext()
-compute_utils = ComputeUtils(ctx)
+# ctx = DatabricksContext()
+# compute_utils = ComputeUtils(ctx)
+ctx = None
+compute_utils = None
