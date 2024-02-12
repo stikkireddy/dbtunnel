@@ -39,7 +39,10 @@ def main():
     proxy_context = ProxyContext(config)
     app = make_simple_proxy_app(proxy_context)
     try:
-        return uvicorn.run(host=args.host, port=int(args.port), app=app)
+        return uvicorn.run(host=args.host,
+                           port=int(args.port),
+                           app=app,
+                           root_path=args.url_base_path)
     finally:
         asyncio.run(proxy_context.close())
 
