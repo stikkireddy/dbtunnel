@@ -93,8 +93,11 @@ class GradioAppTunnel(DbTunnel):
                 proxy_cmd.append(self._basic_tunnel_auth["simple_auth_workspace_url"])
 
             self._log.info(f"Running proxy server via command: {' '.join(proxy_cmd)}")
-            for log_stmt in execute(proxy_cmd, my_env, cwd=self._cwd):
-                self._log.info(log_stmt)
+            try:
+                for log_stmt in execute(proxy_cmd, my_env, cwd=self._cwd):
+                    self._log.info(log_stmt)
+            except Exception as e:
+                self._log.info("Error running proxy server")
 
         uvicorn_thread = threading.Thread(target=run_uvicorn_app, args=(my_env,))
         # Start the thread in the background
