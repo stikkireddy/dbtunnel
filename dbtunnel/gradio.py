@@ -72,8 +72,6 @@ class GradioAppTunnel(DbTunnel):
             return
 
         self._log.info("Starting server...")
-        import nest_asyncio
-        nest_asyncio.apply()
 
         gradio_service_port = 9908
         port = self._port
