@@ -29,7 +29,7 @@ def main():
         ap.error(
             "The `uvicorn` ASGI server package is required for the command line client."
         )
-
+    print("Starting proxy server... with args: ", args)
     config = framework_specific_proxy_config[args.framework](**{
         "url_base_path": args.url_base_path,
         "service_host": args.host,
