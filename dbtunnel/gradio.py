@@ -98,7 +98,7 @@ class GradioAppTunnel(DbTunnel):
         # uvicorn_thread.start()
 
         my_env = os.environ.copy()
-        proxy_cmd = ["python", "-m" "dbtunnel.vendor.asgiproxy",
+        proxy_cmd = ["python", "-m", "dbtunnel.vendor.asgiproxy",
                "--port", str(port),
                 "--url-base-path", url_base_path,
                 "--framework", Frameworks.GRADIO]
