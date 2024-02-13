@@ -58,7 +58,10 @@ def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
     popen = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             universal_newlines=True, env=env, cwd=cwd)
+                             universal_newlines=True,
+                             env=env,
+                             cwd=cwd,
+                             bufsize=1)
     if popen.stdout is not None:
         for stdout_line in iter(popen.stdout.readline, ""):
             yield stdout_line
