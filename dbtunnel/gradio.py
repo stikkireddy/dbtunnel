@@ -56,7 +56,7 @@ class GradioAppTunnel(DbTunnel):
 
         my_env = os.environ.copy()
         def spawn_gradio(env_copy):
-            env_copy = {}
+            env_copy = {"PYTHONPATH": env_copy["PYTHONPATH"]}
             env_copy["GRADIO_SERVER_PORT"] = str(gradio_service_port)
             env_copy["GRADIO_SERVER_NAME"] = "0.0.0.0"
 
