@@ -55,14 +55,20 @@ class GradioAppTunnel(DbTunnel):
         self._log.info("Starting gradio...")
 
         my_env = os.environ.copy()
-        my_env["GRADIO_SERVER_PORT"] = str(gradio_service_port)
-        my_env["GRADIO_SERVER_NAME"] = "0.0.0.0"
+        def spawn_gradio(env_copy):
+            env_copy["GRADIO_SERVER_PORT"] = str(gradio_service_port)
+            env_copy["GRADIO_SERVER_NAME"] = "0.0.0.0"
 
-        cmd = ["python", self._app_path]
+            cmd = ["python", self._app_path]
 
-        self._log.info(f"Running command: {' '.join(cmd)}")
-        for log_stmt in execute(cmd, my_env, cwd=self._cwd):
-            self._log.info(log_stmt.rstrip("/n"))
+            self._log.info(f"Running command: {' '.join(cmd)}")
+            for log_stmt in execute(cmd, env_copy, cwd=self._cwd):
+                self._log.info(log_stmt.rstrip("/n"))
+
+        import threading
+        t = threading.Thread(target=spawn_gradio, args=(my_env,))
+        t.start()
+        t.join()
 
         proxy_service.wait()
 
