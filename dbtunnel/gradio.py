@@ -56,14 +56,16 @@ class GradioAppTunnel(DbTunnel):
 
         my_env = os.environ.copy()
         def spawn_gradio(env_copy):
-            env_copy = {"PYTHONPATH": env_copy["PYTHONPATH"]}
-            env_copy["GRADIO_SERVER_PORT"] = str(gradio_service_port)
-            env_copy["GRADIO_SERVER_NAME"] = "0.0.0.0"
+            e = {"PYTHONPATH": env_copy["PYTHONPATH"],
+                 "PATH": env_copy["PATH"],
+                 "SHELL": env_copy["SHELL"],}
+            e["GRADIO_SERVER_PORT"] = str(gradio_service_port)
+            e["GRADIO_SERVER_NAME"] = "0.0.0.0"
 
             cmd = ["python", self._app_path]
 
             self._log.info(f"Running command: {' '.join(cmd)}")
-            for log_stmt in execute(cmd, env_copy, cwd=self._cwd):
+            for log_stmt in execute(cmd, e, cwd=self._cwd):
                 self._log.info(log_stmt.rstrip("/n"))
 
         import threading
