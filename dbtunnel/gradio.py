@@ -1,11 +1,9 @@
-import functools
-import functools
 import os
-import threading
 
-from dbtunnel.tunnels import DbTunnel
+from dbtunnel.tunnels import DbTunnel, DbTunnelProxy
 from dbtunnel.utils import execute
 from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
+
 
 class GradioAppTunnel(DbTunnel):
 
@@ -40,29 +38,17 @@ class GradioAppTunnel(DbTunnel):
         port = self._port
         url_base_path = self._proxy_settings.url_base_path
 
-        my_env = os.environ.copy()
+        proxy_service = DbTunnelProxy(
+            proxy_port=port,
+            service_port=gradio_service_port,
+            url_base_path=url_base_path,
+            framework=Frameworks.GRADIO,
+            token_auth=self._basic_tunnel_auth["token_auth"],
+            token_auth_workspace_url=self._basic_tunnel_auth["token_auth_workspace_url"],
+            cwd=self._cwd
+        )
 
-        def run_uvicorn_app(env_copy):
-            proxy_cmd = ["python", "-m", "dbtunnel.vendor.asgiproxy",
-                         "--port", str(port),
-                         "--service-port", str(gradio_service_port),
-                         "--url-base-path", url_base_path,
-                         "--framework", Frameworks.GRADIO]
-            if self._basic_tunnel_auth["simple_auth"] is True:
-                proxy_cmd.append("--token-auth")
-            if self._basic_tunnel_auth["simple_auth_workspace_url"] is not None:
-                proxy_cmd.append("--token-auth-workspace-url")
-                proxy_cmd.append(self._basic_tunnel_auth["simple_auth_workspace_url"])
-
-            self._log.info(f"Running proxy server via command: {' '.join(proxy_cmd)}")
-            try:
-                for log_stmt in execute(proxy_cmd, env_copy, cwd=self._cwd):
-                    self._log.info(log_stmt.rstrip("\n"))
-            except Exception as e:
-                self._log.info("Error running proxy server")
-
-        uvicorn_thread = threading.Thread(target=run_uvicorn_app, args=(my_env,))
-        uvicorn_thread.start()
+        proxy_service.start()
 
         self._log.info(f"Use this link to access the Gradio UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
@@ -78,7 +64,7 @@ class GradioAppTunnel(DbTunnel):
         for log_stmt in execute(cmd, my_env, cwd=self._cwd):
             self._log.info(log_stmt.rstrip("/n"))
 
-        uvicorn_thread.join()
+        proxy_service.wait()
 
     def _run_app(self):
         self.display()

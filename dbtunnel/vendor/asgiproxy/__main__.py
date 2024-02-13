@@ -20,7 +20,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, required=True)
     ap.add_argument("--service-port", type=int, required=True)
-    ap.add_argument("--token-auth", type=bool, default=False)
+    ap.add_argument("--token-auth", action='store_true', default=False)
     ap.add_argument("--token-auth-workspace-url", type=str, default=None)
     ap.add_argument("--host", type=str, default="0.0.0.0")
     ap.add_argument("--url-base-path", type=str, required=True)
