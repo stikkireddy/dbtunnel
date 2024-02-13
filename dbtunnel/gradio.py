@@ -76,7 +76,8 @@ class GradioAppTunnel(DbTunnel):
 
         self._log.info(f"Running command: {' '.join(cmd)}")
         for log_stmt in execute(cmd, my_env, cwd=self._cwd):
-            self._log.info(log_stmt.rstrip("/n"))
+            print("gradio: ", log_stmt.rstrip("/n"))
+            # self._log.info(log_stmt.rstrip("/n"))
 
         uvicorn_thread.join()
 
