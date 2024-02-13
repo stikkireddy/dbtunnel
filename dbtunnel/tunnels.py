@@ -267,7 +267,7 @@ class DbTunnelProxy:
         self._token_auth = token_auth
         self._token_auth_workspace_url = token_auth_workspace_url
         self._cwd = cwd
-        self._log: logging.Logger = get_logger()
+        self._log: logging.Logger = get_logger(app_name="dbtunnel-proxy")
         self._thread = self._make_thread()
 
     def _make_thread(self):
