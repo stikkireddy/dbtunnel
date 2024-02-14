@@ -57,18 +57,21 @@ def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
     import subprocess
     popen = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             universal_newlines=True, env=env, cwd=cwd)
+                             stderr=subprocess.STDOUT,
+                             universal_newlines=True,
+                             env=env,
+                             cwd=cwd,
+                             bufsize=1)
     if popen.stdout is not None:
         for stdout_line in iter(popen.stdout.readline, ""):
             yield stdout_line
 
-    if popen.stderr is not None:
-        for stderr_line in iter(popen.stderr.readline, ""):  # Iterate over stderr
-            yield stderr_line
+    # if popen.stderr is not None:
+    #     for stderr_line in iter(popen.stderr.readline, ""):  # Iterate over stderr
+    #         yield stderr_line
 
     popen.stdout.close()
-    popen.stderr.close()  # Close stderr
+    # popen.stderr.close()  # Close stderr
     return_code = popen.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
@@ -289,5 +292,10 @@ def get_logger(
     return logger
 
 
-ctx = DatabricksContext()
-compute_utils = ComputeUtils(ctx)
+try:
+    ctx = DatabricksContext()
+    compute_utils = ComputeUtils(ctx)
+except Exception as e:
+    logging.info("Unable to establish context, you are most likely running outside of databricks")
+    ctx = None
+    compute_utils = None

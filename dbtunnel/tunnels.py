@@ -3,12 +3,13 @@ import datetime
 import json
 import logging
 import os
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
-from dbtunnel.utils import pkill, ctx, get_logger
+from dbtunnel.utils import pkill, ctx, get_logger, execute
 
 
 @dataclass
@@ -108,7 +109,7 @@ class DbTunnel(abc.ABC):
         self._share_information = None
         self._share_trigger_callback = None
         self._log: logging.Logger = get_logger()  # initialize logger during the run method
-        self._basic_tunnel_auth = {"simple_auth": False, "simple_auth_workspace_url": None}
+        self._basic_tunnel_auth = {"token_auth": False, "token_auth_workspace_url": None}
 
     @abc.abstractmethod
     def _imports(self):
@@ -276,3 +277,56 @@ class DbTunnel(abc.ABC):
     def display(self):
         pass  # no op because of the annoying flickering
         # self._display_html(self._display_url())
+
+
+class DbTunnelProxy:
+
+    def __init__(self,
+                 proxy_port: int,
+                 service_port: int,
+                 url_base_path: str,
+                 framework: str,
+                 token_auth: bool = False,
+                 token_auth_workspace_url: Optional[str] = None,
+                 cwd: str = None):
+        self._proxy_port = proxy_port
+        self._service_port = service_port
+        self._url_base_path = url_base_path
+        self._framework = framework
+        self._token_auth = token_auth
+        self._token_auth_workspace_url = token_auth_workspace_url
+        self._cwd = cwd
+        self._log: logging.Logger = get_logger(app_name="dbtunnel-proxy")
+        self._thread = self._make_thread()
+
+    def _make_thread(self):
+        my_env = os.environ.copy()
+
+        def run_uvicorn_app(env_copy):
+            proxy_cmd = ["python", "-m", "dbtunnel.vendor.asgiproxy",
+                         "--port", str(self._proxy_port),
+                         "--service-port", str(self._service_port),
+                         "--url-base-path", self._url_base_path,
+                         "--framework", self._framework]
+            if self._token_auth is True:
+                proxy_cmd.append("--token-auth")
+            if self._token_auth_workspace_url is not None:
+                proxy_cmd.append("--token-auth-workspace-url")
+                proxy_cmd.append(self._token_auth_workspace_url)
+
+            self._log.info(f"Running proxy server via command: {' '.join(proxy_cmd)}")
+            try:
+                for log_stmt in execute(proxy_cmd, env_copy, cwd=self._cwd):
+                    self._log.info(log_stmt.rstrip("\n"))
+            except Exception as e:
+                self._log.info("Error running proxy server")
+
+        return threading.Thread(target=run_uvicorn_app, args=(my_env,))
+
+    def start(self):
+        self._thread.start()
+        return self
+
+    def wait(self):
+        self._thread.join()
+        return self
