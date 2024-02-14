@@ -26,6 +26,8 @@ def validate_app_name(ctx, param, value):
 
 def is_frpc_installed():
     try:
+        env_copy = os.environ.copy()
+        env_copy["PATH"] = "/opt/homebrew/bin:" + env_copy["PATH"]
         subprocess.run(["frpc", "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ)
         click.echo("✅  frpc is already installed.")
         return True
