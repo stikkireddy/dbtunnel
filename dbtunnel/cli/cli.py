@@ -99,13 +99,16 @@ def validate():
 
 @cli.command()
 @click.option('--tunnel-host', '-th', type=str, required=True, help='The domain of the dbtunnel server')
-@click.option('--tunnel-port', '-tp', type=int, default=7000, help='The port of the dbtunnel server. [default = 7000]')
+@click.option('--tunnel-port', '-tp', type=int, show_default=True,
+              default=7000,
+              help='The port of the dbtunnel server.')
 @click.option('--local-host', '-h', type=str, default="0.0.0.0", help='The local host to bind')
 @click.option('--local-port', '-p', type=int, required=True, help='The local port to bind')
 @click.option('--app-name', '-n', type=str, required=True, callback=validate_app_name,
               help='The name of the app. Should be unique no spaces.')
 @click.option('--subdomain', '-sd', type=str, callback=validate_app_name,
               help='The subdomain of the app. Should be unique no spaces.')
+@click.option("--ssh", is_flag=True, show_default=True, default=False, help="Use ssh instead of native cli for tunnel.")
 def bind(**kwargs):
     """
     Bind a local port to a dbtunnel server domain.
@@ -120,6 +123,7 @@ def bind(**kwargs):
     tunnel_port = kwargs.get('tunnel_port')
     local_port = kwargs.get('local_port')
     local_host = kwargs.get('local_host')
+    use_ssh_mode = kwargs.get('ssh')
 
     click.echo(f'✅  Pushing {app_name} to dbtunnel server')
     click.echo(f'✅  Creating configuration file')
@@ -130,7 +134,8 @@ def bind(**kwargs):
         tunnel_port=tunnel_port,
         local_port=local_port,
         subdomain=app_name,
-        executable_path=str(frpc_path)
+        executable_path=str(frpc_path),
+        mode='ssh' if use_ssh_mode else 'native',
     )
     db_tunnel_config.publish()
     try:

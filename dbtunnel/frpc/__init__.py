@@ -3,7 +3,7 @@ import shutil
 import tarfile
 import tempfile
 import uuid
-from typing import Optional
+from typing import Optional, Literal
 import requests
 import re
 
@@ -51,7 +51,9 @@ class DBTunnelConfig:
                  local_host="0.0.0.0",
                  file_name: str = "dbtunnel.toml",
                  folder_name: str = ".dbtunnel",
-                 executable_path: str = "frpc"):
+                 executable_path: str = "frpc",
+                 mode: Literal['native', 'ssh'] = 'native'):
+        self._mode = mode
         self._app_name = app_name
         self._tunnel_host = tunnel_host
         self._tunnel_port = tunnel_port
@@ -99,17 +101,36 @@ class DBTunnelConfig:
             toml.dump(config_data, toml_file)
 
     def _sanitize_log(self, log_stmt):
-        # replace [.*\.go.*] with dbtunnel
-        return re.sub(r"\[[^\[]*\.go:\d+\]", "[dbtunnel-client]", log_stmt)
+        if self._mode == "native":
+            # replace [.*\.go.*] with dbtunnel
+            return re.sub(r"\[[^\[]*\.go:\d+\]", "[dbtunnel-client]", log_stmt)
+        if self._mode == "ssh":
+            if "frp (via SSH)" in log_stmt:
+                return None
+            if log_stmt.strip() == "":
+                return None
+            if log_stmt.startswith("RemoteAddress"):
+                return f"RemoteAddress: {self.public_url()}:443"
+            return log_stmt
 
     def run(self):
         # Run the frpc command
         r = re.compile(r".*start error: proxy.*already exists.*")
         env_copy = os.environ.copy()
-        for stmt in execute([self._executable_path,
-                             "-c", self.get_file_path()
-                             ], env=env_copy):
+        if self._mode == 'native':
+            cmd = [self._executable_path, "-c", self.get_file_path()]
+        else:
+            cmd = ["ssh", "-R",
+                   f":8000:{self._local_host}:{self._local_port}",
+                   f"v0@{self._tunnel_host}", "-p",
+                   "7200", "http",
+                   "--proxy_name", self._app_name,
+                   "--sd", self._subdomain]
+        counter = 1
+        for stmt in execute(cmd, env=env_copy):
             stmt = self._sanitize_log(stmt)
+            if stmt is None:
+                continue
             if r.match(stmt):
                 print(stmt.rstrip("\n"))
                 raise ProxyWithNameAlreadyExists(f"Proxy [{self._app_name}] already exists."
