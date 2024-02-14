@@ -208,6 +208,33 @@ class DbTunnel(abc.ABC):
             self._log.info(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
 
+    def share_to_internet(self,
+                          *,
+                          tunnel_host: str,
+                          tunnel_port: int = 7000,
+                          app_name: str,
+                          subdomain: str = None, ):
+        self._share = True
+        from dbtunnel.frpc import DBTunnelConfig
+        db_tunnel_config = DBTunnelConfig(
+            app_name=app_name,
+            tunnel_host=tunnel_host,
+            tunnel_port=tunnel_port,
+            local_port=self._port,
+            subdomain=subdomain
+        )
+        print("Downloading required binary if it does not exist!")
+        db_tunnel_config.download_on_linux()
+
+        def share_to_internet():
+            db_tunnel_config.publish()
+            try:
+                db_tunnel_config.run_as_thread()
+            except Exception as e:
+                self._log.error(e)
+
+        self._share_trigger_callback = share_to_internet
+
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
     def share_to_internet_via_ngrok(self,
                                     *,

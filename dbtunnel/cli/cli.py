@@ -1,0 +1,112 @@
+import os
+import subprocess
+
+import click
+from click import ClickException
+
+from dbtunnel.frpc import DBTunnelConfig, ProxyWithNameAlreadyExists
+
+
+@click.group()
+def cli():
+    """
+    DBTunnel CLI to poke a hole to internet. This CLI is only for internal use.
+    """
+
+    pass
+
+
+def validate_app_name(ctx, param, value):
+    if value is None:
+        return value
+    if not value.isalnum():
+        raise click.BadParameter('App name should only contain alphanumeric characters and no spaces.')
+    return value
+
+
+def is_frpc_installed():
+    try:
+        subprocess.run(["frpc", "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ)
+        click.echo("✅  frpc is already installed.")
+        return True
+    except FileNotFoundError:
+        click.echo("❌  frpc is not installed.")
+        return False
+    except subprocess.CalledProcessError:
+        click.echo("❌  frpc is not installed.")
+        return False
+
+
+def brew_install_frpc():
+    try:
+        result = subprocess.run(["brew", "install", "frpc"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                env=os.environ)
+        output = result.stdout.decode("utf-8")
+        click.echo(output)
+        click.echo("✅  frpc finished installing.")
+    except subprocess.CalledProcessError:
+        raise ValueError("Error: Failed to install frpc using brew.")
+
+
+def verify_homebrew():
+    try:
+        subprocess.run(["brew", "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                       env=os.environ)
+        click.echo("✅  Homebrew is installed.")
+        return True
+    except Exception:
+        raise ValueError("❌  Homebrew is not installed. Please install homebrew (https://brew.sh/) and try again.")
+
+def is_mac():
+    import platform
+    return platform.system() == 'Darwin'
+
+def verify_installation():
+    if is_mac() is False:
+        raise ClickException("Error: Unsupported platform. Only MacOS is supported.")
+
+    if is_frpc_installed() is False:
+        verify_homebrew()
+        brew_install_frpc()
+        is_frpc_installed()
+
+@cli.command()
+@click.option('--tunnel-host', '-th', type=str, required=True, help='The domain of the dbtunnel server')
+@click.option('--tunnel-port', '-tp', type=int, default=7000, help='The port of the dbtunnel server. [default = 7000]')
+@click.option('--local-host', '-h', type=str, default="0.0.0.0", help='The local host to bind')
+@click.option('--local-port', '-p', type=int, required=True, help='The local port to bind')
+@click.option('--app-name', '-n', type=str, required=True, callback=validate_app_name,
+              help='The name of the app. Should be unique no spaces.')
+@click.option('--subdomain', '-sd', type=str, callback=validate_app_name,
+              help='The subdomain of the app. Should be unique no spaces.')
+def bind(**kwargs):
+    """
+    Bind a local port to a dbtunnel server domain.
+    """
+    click.echo('Checking if binaries is installed')
+    verify_installation()
+    click.echo('✅  Binaries Properly Installed')
+    app_name = kwargs.get('app_name')
+    tunnel_host = kwargs.get('tunnel_host').replace("https://", "").replace("https://", "").replace("/", "")
+    tunnel_port = kwargs.get('tunnel_port')
+    local_port = kwargs.get('local_port')
+    local_host = kwargs.get('local_host')
+
+    click.echo(f'✅  Pushing {app_name} to dbtunnel server')
+    click.echo(f'✅  Binding {local_host}:{local_port} to https://{app_name}.{tunnel_host}')
+
+    click.echo(f'✅  Creating configuration file')
+
+    db_tunnel_config = DBTunnelConfig(
+        app_name=app_name,
+        tunnel_host=tunnel_host,
+        tunnel_port=tunnel_port,
+        local_port=local_port,
+        subdomain=app_name
+    )
+    db_tunnel_config.publish()
+    try:
+        db_tunnel_config.run()
+    except ProxyWithNameAlreadyExists as e:
+        raise click.ClickException(str(e))
+

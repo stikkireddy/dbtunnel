@@ -89,12 +89,20 @@ setup(
         "dev": [
             "mkdocs-material",
             "mkdocs-jupyter",
-        ]
+        ],
+        "cli": [
+            "click"
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    entry_points={
+        'console_scripts': [
+            'dbtunnel = dbtunnel.cli.cli:cli',
+        ],
+    },
     python_requires=">=3.10",
 )
