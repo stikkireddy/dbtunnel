@@ -91,7 +91,8 @@ setup(
             "mkdocs-jupyter",
         ],
         "cli": [
-            "click"
+            "click",
+            "toml"
         ],
     },
     classifiers=[
