@@ -1,5 +1,6 @@
 import os
 import subprocess
+from pathlib import Path
 
 import click
 from click import ClickException
@@ -23,13 +24,11 @@ def validate_app_name(ctx, param, value):
         raise click.BadParameter('App name should only contain alphanumeric characters and no spaces.')
     return value
 
-
-def is_frpc_installed():
+def is_frpc_installed(frpc_path: Path, silent=False):
     try:
-        env_copy = os.environ.copy()
-        env_copy["PATH"] = "/opt/homebrew/bin:" + env_copy["PATH"]
-        subprocess.run(["frpc", "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ)
-        click.echo("✅  frpc is already installed.")
+        subprocess.run([str(frpc_path), "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ)
+        if silent is False:
+            click.echo("✅  frpc is already installed.")
         return True
     except FileNotFoundError:
         click.echo("❌  frpc is not installed.")
@@ -54,6 +53,15 @@ def brew_install_frpc():
         raise ValueError("Error: Failed to install frpc using brew.")
 
 
+def get_frpc_homebrew_path() -> Path:
+    try:
+        result = subprocess.run(["brew", "--prefix"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                env=os.environ)
+        output = result.stdout.decode("utf-8").strip()
+        return Path(output) / "bin" / "frpc"
+    except subprocess.CalledProcessError:
+        raise ValueError("Error: unable to find brew --prefix.")
+
 def verify_homebrew():
     try:
         subprocess.run(["brew", "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
@@ -67,14 +75,14 @@ def is_mac():
     import platform
     return platform.system() == 'Darwin'
 
-def verify_installation():
+def verify_installation(frpc_exec_path: Path):
     if is_mac() is False:
         raise ClickException("Error: Unsupported platform. Only MacOS is supported.")
-
-    if is_frpc_installed() is False:
-        verify_homebrew()
+    if is_frpc_installed(frpc_exec_path) is False:
         brew_install_frpc()
-        is_frpc_installed()
+        # just double verify
+        is_frpc_installed(frpc_exec_path, silent=True)
+        click.echo(f"✅  frpc is installed at path: {frpc_exec_path}.")
 
 @cli.command()
 @click.option('--tunnel-host', '-th', type=str, required=True, help='The domain of the dbtunnel server')
@@ -90,7 +98,9 @@ def bind(**kwargs):
     Bind a local port to a dbtunnel server domain.
     """
     click.echo('Checking if binaries is installed')
-    verify_installation()
+    verify_homebrew()
+    frpc_path = get_frpc_homebrew_path()
+    verify_installation(frpc_path)
     click.echo('✅  Binaries Properly Installed')
     app_name = kwargs.get('app_name')
     tunnel_host = kwargs.get('tunnel_host').replace("https://", "").replace("https://", "").replace("/", "")
@@ -99,8 +109,6 @@ def bind(**kwargs):
     local_host = kwargs.get('local_host')
 
     click.echo(f'✅  Pushing {app_name} to dbtunnel server')
-    click.echo(f'✅  Binding {local_host}:{local_port} to https://{app_name}.{tunnel_host}')
-
     click.echo(f'✅  Creating configuration file')
 
     db_tunnel_config = DBTunnelConfig(
@@ -108,10 +116,12 @@ def bind(**kwargs):
         tunnel_host=tunnel_host,
         tunnel_port=tunnel_port,
         local_port=local_port,
-        subdomain=app_name
+        subdomain=app_name,
+        executable_path=str(frpc_path)
     )
     db_tunnel_config.publish()
     try:
+        click.echo(f'\n\t\t⚠️  Binding {local_host}:{local_port} to https://{app_name}.{tunnel_host}\n')
         db_tunnel_config.run()
     except ProxyWithNameAlreadyExists as e:
         raise click.ClickException(str(e))

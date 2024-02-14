@@ -50,7 +50,8 @@ class DBTunnelConfig:
                  tunnel_port: int = 7000,
                  local_host="0.0.0.0",
                  file_name: str = "dbtunnel.toml",
-                 folder_name: str = ".dbtunnel"):
+                 folder_name: str = ".dbtunnel",
+                 executable_path: str = "frpc"):
         self._app_name = app_name
         self._tunnel_host = tunnel_host
         self._tunnel_port = tunnel_port
@@ -59,7 +60,7 @@ class DBTunnelConfig:
         self._subdomain: str = subdomain or self._app_name or str(uuid.uuid4())
         self._file_name = file_name
         self._folder_name = folder_name
-        self._executable_path = "frpc"
+        self._executable_path = executable_path
         self._setup()
 
     def get_file_path(self):
@@ -97,14 +98,18 @@ class DBTunnelConfig:
         with open(file_path, 'w') as toml_file:
             toml.dump(config_data, toml_file)
 
+    def _sanitize_log(self, log_stmt):
+        # replace [.*\.go.*] with dbtunnel
+        return re.sub(r"\[[^\[]*\.go:\d+\]", "[dbtunnel-client]", log_stmt)
+
     def run(self):
         # Run the frpc command
         r = re.compile(r".*start error: proxy.*already exists.*")
         env_copy = os.environ.copy()
-        env_copy["PATH"] = "/opt/homebrew/bin:" + env_copy["PATH"]
         for stmt in execute([self._executable_path,
                              "-c", self.get_file_path()
                              ], env=env_copy):
+            stmt = self._sanitize_log(stmt)
             if r.match(stmt):
                 print(stmt.rstrip("\n"))
                 raise ProxyWithNameAlreadyExists(f"Proxy [{self._app_name}] already exists."
