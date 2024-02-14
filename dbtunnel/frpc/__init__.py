@@ -56,7 +56,7 @@ class DBTunnelConfig:
         self._tunnel_port = tunnel_port
         self._local_port = local_port
         self._local_host = local_host
-        self._subdomain: str = subdomain or str(uuid.uuid4())
+        self._subdomain: str = subdomain or self._app_name or str(uuid.uuid4())
         self._file_name = file_name
         self._folder_name = folder_name
         self._executable_path = "frpc"
