@@ -130,8 +130,9 @@ def bind(**kwargs):
         click.echo('✅  Binaries Properly Installed')
 
     click.echo('✅  Using SSH Tunnel')
-    click.echo(f'✅  Pushing {app_name} to dbtunnel server')
-    click.echo(f'✅  Creating configuration file')
+    click.echo(f'✅  Pushing {app_name} to dbtunnel server via: {"native" if use_ssh_mode is False else "ssh tunnel"}')
+    if use_ssh_mode is False:
+        click.echo(f'✅  Creating configuration file')
 
     db_tunnel_config = DBTunnelConfig(
         app_name=app_name,
@@ -142,9 +143,10 @@ def bind(**kwargs):
         executable_path=str(frpc_native_executable_path),
         mode='ssh' if use_ssh_mode else 'native',
     )
+
     db_tunnel_config.publish()
     try:
-        click.echo(f'\n\t\t⚠️  Binding {local_host}:{local_port} to https://{app_name}.{tunnel_host}\n')
+        click.echo(f'\n\t\t⚠️  Binding {local_host}:{local_port} to https://{app_name}.{tunnel_host}:443\n')
         db_tunnel_config.run()
     except ProxyWithNameAlreadyExists as e:
         raise click.ClickException(str(e))
