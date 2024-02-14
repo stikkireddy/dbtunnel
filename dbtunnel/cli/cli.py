@@ -84,6 +84,19 @@ def verify_installation(frpc_exec_path: Path):
         is_frpc_installed(frpc_exec_path, silent=True)
         click.echo(f"✅  frpc is installed at path: {frpc_exec_path}.")
 
+
+@cli.command()
+def validate():
+    """
+    Validate if frpc is installed and working.
+    """
+    click.echo('Checking if binaries is installed')
+    verify_homebrew()
+    frpc_path = get_frpc_homebrew_path()
+    verify_installation(frpc_path)
+    click.echo('✅  Binaries Properly Installed')
+
+
 @cli.command()
 @click.option('--tunnel-host', '-th', type=str, required=True, help='The domain of the dbtunnel server')
 @click.option('--tunnel-port', '-tp', type=int, default=7000, help='The port of the dbtunnel server. [default = 7000]')
