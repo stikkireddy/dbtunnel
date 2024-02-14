@@ -113,18 +113,22 @@ def bind(**kwargs):
     """
     Bind a local port to a dbtunnel server domain.
     """
-    click.echo('Checking if binaries is installed')
-    verify_homebrew()
-    frpc_path = get_frpc_homebrew_path()
-    verify_installation(frpc_path)
-    click.echo('✅  Binaries Properly Installed')
+    use_ssh_mode = kwargs.get('ssh')
     app_name = kwargs.get('app_name')
     tunnel_host = kwargs.get('tunnel_host').replace("https://", "").replace("https://", "").replace("/", "")
     tunnel_port = kwargs.get('tunnel_port')
     local_port = kwargs.get('local_port')
     local_host = kwargs.get('local_host')
-    use_ssh_mode = kwargs.get('ssh')
 
+    if use_ssh_mode is False:
+        # usually you have ssh client installed on mac
+        click.echo('Checking if binaries is installed')
+        verify_homebrew()
+        frpc_path = get_frpc_homebrew_path()
+        verify_installation(frpc_path)
+        click.echo('✅  Binaries Properly Installed')
+
+    click.echo('✅  Using SSH Tunnel')
     click.echo(f'✅  Pushing {app_name} to dbtunnel server')
     click.echo(f'✅  Creating configuration file')
 
