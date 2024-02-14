@@ -39,8 +39,12 @@ def is_frpc_installed():
 
 def brew_install_frpc():
     try:
+        click.confirm('Do you want to install frpc via brew. dbtunnel will run: brew install frpc?', abort=True)
+        env_copy = os.environ.copy()
+        # do not update homebrew
+        env_copy["HOMEBREW_NO_AUTO_UPDATE"] = "1"
         result = subprocess.run(["brew", "install", "frpc"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                env=os.environ)
+                                env=env_copy)
         output = result.stdout.decode("utf-8")
         click.echo(output)
         click.echo("✅  frpc finished installing.")
