@@ -211,8 +211,8 @@ class DbTunnel(abc.ABC):
     def share_to_internet(self,
                           *,
                           tunnel_host: str,
-                          tunnel_port: int = 7000,
                           app_name: str,
+                          tunnel_port: int = 7000,
                           subdomain: str = None, ):
         self._share = True
         from dbtunnel.frpc import DBTunnelConfig
@@ -234,6 +234,8 @@ class DbTunnel(abc.ABC):
                 self._log.error(e)
 
         self._share_trigger_callback = share_to_internet
+        print("Access your app at: ", db_tunnel_config.public_url())
+        return self
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
     def share_to_internet_via_ngrok(self,

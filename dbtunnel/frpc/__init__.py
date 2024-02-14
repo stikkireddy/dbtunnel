@@ -115,3 +115,6 @@ class DBTunnelConfig:
         t = threading.Thread(target=self.run)
         t.start()
         return t
+
+    def public_url(self):
+        return f"https://{self._subdomain}.{self._tunnel_host}"
