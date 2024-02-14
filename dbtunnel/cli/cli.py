@@ -119,13 +119,14 @@ def bind(**kwargs):
     tunnel_port = kwargs.get('tunnel_port')
     local_port = kwargs.get('local_port')
     local_host = kwargs.get('local_host')
+    frpc_native_executable_path = None
 
     if use_ssh_mode is False:
         # usually you have ssh client installed on mac
         click.echo('Checking if binaries is installed')
         verify_homebrew()
-        frpc_path = get_frpc_homebrew_path()
-        verify_installation(frpc_path)
+        frpc_native_executable_path = get_frpc_homebrew_path()
+        verify_installation(frpc_native_executable_path)
         click.echo('✅  Binaries Properly Installed')
 
     click.echo('✅  Using SSH Tunnel')
@@ -138,7 +139,7 @@ def bind(**kwargs):
         tunnel_port=tunnel_port,
         local_port=local_port,
         subdomain=app_name,
-        executable_path=str(frpc_path),
+        executable_path=str(frpc_native_executable_path),
         mode='ssh' if use_ssh_mode else 'native',
     )
     db_tunnel_config.publish()
