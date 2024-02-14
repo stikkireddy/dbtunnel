@@ -101,6 +101,7 @@ class DBTunnelConfig:
         # Run the frpc command
         r = re.compile(r".*start error: proxy.*already exists.*")
         env_copy = os.environ.copy()
+        env_copy["PATH"] = "/opt/homebrew/bin:" + env_copy["PATH"]
         for stmt in execute([self._executable_path,
                              "-c", self.get_file_path()
                              ], env=env_copy):
