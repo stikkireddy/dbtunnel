@@ -2,25 +2,6 @@ from dbtunnel.tunnels import DbTunnel, DbTunnelProxy
 from dbtunnel.utils import process_file, execute
 from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
-
-def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
-                                      service_port: int = 9989,
-                                      auth_config: dict = None):
-    from dbtunnel.vendor.asgiproxy.config import BaseURLProxyConfigMixin, ProxyConfig
-    auth_config = auth_config or {}
-
-    config = type(
-        "Config",
-        (BaseURLProxyConfigMixin, ProxyConfig),
-        {
-            "upstream_base_url": f"http://{service_host}:{service_port}",
-            "rewrite_host_header": f"{service_host}:{service_port}",
-            **auth_config,
-        },
-    )()
-    return config
-
-
 class StreamlitTunnel(DbTunnel):
 
     def __init__(self, script_path: str, port: int):
