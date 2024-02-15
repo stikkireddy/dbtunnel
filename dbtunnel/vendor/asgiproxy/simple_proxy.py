@@ -156,11 +156,12 @@ def make_simple_proxy_app(
         if scope["type"] == "lifespan":
             return None  # We explicitly do nothing here for this simple app.
 
-        if is_databricks_host(get_host_from_headers(scope)) is False:
-            scope["_is_databricks_proxy_url"] = False
-
-        print("scope", scope)
         add_if_databricks_proxy_scope(scope)
+        if is_from_databricks_proxy(scope) is False:
+            # remove all the driver proxy defaults this is usually when it comes from a relay/etc
+            root_path = "/"
+            if scope["path"].startswith(root_path):
+                scope["path"] = scope["path"].replace(root_path, "")
 
         # we do not have enough information in websocket proxied headers to function auth
         if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and \
