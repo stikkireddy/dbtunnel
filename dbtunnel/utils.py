@@ -51,19 +51,24 @@ def ensure_python_path(env):
             env["PYTHONPATH"] = f"{py_path}:{site_packages}"
 
 
-def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
+def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True, shell=False, trim_new_line=True):
     if ensure_python_site_packages:
         ensure_python_path(env)
     import subprocess
+    if shell is True:
+        cmd = " ".join(cmd)
     popen = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              universal_newlines=True,
+                             shell=shell,
                              env=env,
                              cwd=cwd,
                              bufsize=1)
     if popen.stdout is not None:
         for stdout_line in iter(popen.stdout.readline, ""):
+            if trim_new_line:
+                stdout_line = stdout_line.strip()
             yield stdout_line
 
     # if popen.stderr is not None:
@@ -83,16 +88,6 @@ def pkill(process_name):
         print(f"Processes with name '{process_name}' killed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error killing processes: {e}")
-
-
-def make_asgi_proxy_app(proxy_config):
-    from dbtunnel.vendor.asgiproxy.context import ProxyContext
-    from dbtunnel.vendor.asgiproxy.simple_proxy import make_simple_proxy_app
-
-    proxy_context = ProxyContext(proxy_config)
-    app = make_simple_proxy_app(proxy_context)
-    return app
-
 
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
 def get_repl_context() -> Any:
@@ -145,6 +140,11 @@ class DatabricksContext:
     def current_user_name(self) -> str:
         return WorkspaceClient(host=self.host,
                                token=self.token).current_user.me().user_name
+
+    @cached_property
+    def current_username_alphanumeric(self) -> str:
+        sanitized = self.current_user_name.split("@")[0].replace(".", "-")
+        return "".join(c for c in sanitized if c.isalnum() or c == "-")
 
 
 @dataclass

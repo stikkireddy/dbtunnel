@@ -9,7 +9,13 @@ from pathlib import Path
 from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
+from databricks.sdk import WorkspaceClient
+
 from dbtunnel.utils import pkill, ctx, get_logger, execute
+
+
+class DBTunnelError(Exception):
+    pass
 
 
 @dataclass
@@ -36,6 +42,21 @@ def get_cloud(context: Dict[str, Any]) -> str:
     return "aws"
 
 
+def remove_lowest_subdomain_from_host(url):
+    parsed_url = urlparse(url)
+    host = parsed_url.netloc if parsed_url.netloc else parsed_url.path
+    parts = host.split('.')
+    # Check if there are subdomains to remove
+    if len(parts) > 2:
+        # Remove the lowest subdomain
+        parts.pop(0)
+
+    # Reconstruct the modified host
+    modified_host = '.'.join(parts)
+
+    return modified_host
+
+
 def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int) -> ProxySettings:
     cloud_norm = cloud.lower()
     if cloud_norm not in ["aws", "azure"]:
@@ -45,10 +66,12 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
         "azure": "https://adb-dp-",
     }
     suffix_url_settings = {
-        "aws": "cloud.databricks.com",
         "azure": "azuredatabricks.net",
     }
-    # org_id = self._context["tags"]["orgId"]
+    if cloud_norm == "aws":
+        suffix = remove_lowest_subdomain_from_host(ctx.host)
+        suffix_url_settings["aws"] = suffix
+
     org_shard = ""
     # org_shard doesnt need a suffix of "." for dnsname its handled in building the url
     # only azure right now does dns sharding
@@ -56,7 +79,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     if cloud_norm == "azure":
         org_shard_id = int(org_id) % 20
         org_shard = f".{org_shard_id}"
-    # cluster_id = self._context["tags"]["clusterId"]
+
     url_base_path_no_port = f"/driver-proxy/o/{org_id}/{cluster_id}"
     url_base_path = f"{url_base_path_no_port}/{port}/"
     return ProxySettings(
@@ -111,6 +134,13 @@ class DbTunnel(abc.ABC):
         self._log: logging.Logger = get_logger()  # initialize logger during the run method
         self._basic_tunnel_auth = {"token_auth": False, "token_auth_workspace_url": None}
 
+    def _is_single_user_cluster(self):
+        ws = WorkspaceClient()
+        cluster = ws.clusters.get(self._cluster_id)
+        from databricks.sdk.service.compute import DataSecurityMode
+        return (cluster.data_security_mode in [DataSecurityMode.SINGLE_USER, DataSecurityMode.LEGACY_SINGLE_USER]) \
+            and cluster.single_user_name == get_current_username()
+
     @abc.abstractmethod
     def _imports(self):
         pass
@@ -127,13 +157,18 @@ class DbTunnel(abc.ABC):
     def shared(self):
         return self._share
 
-    def inject_auth(self, host: str = None, token: str = None):
+    def inject_auth(self, host: str = None, token: str = None, write_cfg: bool = False):
         if os.getenv("DATABRICKS_HOST") is None:
             self._log.info("Setting databricks host from context")
             os.environ["DATABRICKS_HOST"] = host or ensure_scheme(ctx.host)
         if os.getenv("DATABRICKS_TOKEN") is None:
             self._log.info("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or ctx.token
+
+        if write_cfg is True and self._is_single_user_cluster():
+            expanded_file_path = os.path.expanduser("~/.databrickscfg")
+            with open(expanded_file_path, "w") as f:
+                f.write(f"[DEFAULT]\nhost = {os.getenv('DATABRICKS_HOST')}\ntoken = {os.getenv('DATABRICKS_TOKEN')}\n")
 
         return self
 
@@ -192,6 +227,10 @@ class DbTunnel(abc.ABC):
                                datefmt_str=datefmt_str)
         return self
 
+    def _validate_options(self):
+        if self._share is True and self._basic_tunnel_auth["token_auth"] is True:
+            raise DBTunnelError("Cannot use token auth with shared tunnel; remove token auth or remove sharing")
+
     def run(self):
         """
         Lifecycle:
@@ -201,6 +240,7 @@ class DbTunnel(abc.ABC):
         :return:
         """
         self._imports()
+        self._validate_options()
         if self._share is True and self._share_trigger_callback is not None:
             import nest_asyncio
             nest_asyncio.apply()
@@ -208,6 +248,37 @@ class DbTunnel(abc.ABC):
         if self._share is True and self._share_information is not None:
             self._log.info(f"Use this information to publicly access your app: \n{self._share_information.public_url}")
         self._run()
+
+    def share_to_internet(self,
+                          *,
+                          app_name: str,
+                          tunnel_host: str = "proxy.dbtunnel.app",
+                          tunnel_port: int = 7000,
+                          subdomain: str = None,
+                          private: bool = False):
+        self._share = True
+        from dbtunnel.relay import DBTunnelRelayClient
+        dbtunnel_relay_client = DBTunnelRelayClient(
+            app_name=app_name,
+            tunnel_host=tunnel_host,
+            tunnel_port=tunnel_port,
+            local_port=self._port,
+            subdomain=subdomain,
+            private=private,
+            user=ctx.current_user_name
+        )
+        print("Downloading required binary if it does not exist!")
+        dbtunnel_relay_client.download_on_linux()
+
+        def share_to_internet():
+            try:
+                print("Access your app at: ", dbtunnel_relay_client.public_url())
+                dbtunnel_relay_client.run_as_thread(output_func=self._log.info)
+            except Exception as e:
+                self._log.error(e)
+
+        self._share_trigger_callback = share_to_internet
+        return self
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
     def share_to_internet_via_ngrok(self,
