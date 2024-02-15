@@ -2,6 +2,8 @@ from typing import Optional, Iterator
 
 from starlette.types import Scope
 
+from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
+
 IS_DATABRICKS_PROXY_SCOPE_KEY = "__is_databricks_proxy"
 
 
@@ -38,3 +40,12 @@ def add_if_databricks_proxy_scope(scope: Scope) -> None:
 
 def is_from_databricks_proxy(scope: Scope) -> bool:
     return IS_DATABRICKS_PROXY_SCOPE_KEY in scope and scope[IS_DATABRICKS_PROXY_SCOPE_KEY] is True
+
+
+def add_framework_to_scope(scope: Scope, framework: str) -> None:
+    scope["__framework"] = framework
+    return
+
+
+def is_streamlit(scope: Scope) -> bool:
+    return Frameworks.STREAMLIT == scope.get("__framework", None)

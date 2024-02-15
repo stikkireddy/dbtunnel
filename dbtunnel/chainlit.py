@@ -1,12 +1,10 @@
-import copy
+import functools
 import functools
 import re
-import threading
 
-from dbtunnel.tunnels import DbTunnel, ProxySettings, DbTunnelProxy
-from dbtunnel.utils import execute, make_asgi_proxy_app
+from dbtunnel.tunnels import DbTunnel, DbTunnelProxy
+from dbtunnel.utils import execute
 from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
-
 
 def make_chainlit_local_proxy_config(
                                      url_base_path: str,

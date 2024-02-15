@@ -134,6 +134,7 @@ async def handle_token_auth(
 
 def make_simple_proxy_app(
         proxy_context: ProxyContext,
+        framework: str,
         login_timeout: int = 3600,
         *,
         proxy_http_handler=proxy_http,

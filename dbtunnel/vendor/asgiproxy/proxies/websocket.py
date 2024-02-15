@@ -9,7 +9,7 @@ from starlette.websockets import WebSocket
 from websockets.exceptions import ConnectionClosed
 
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
-from dbtunnel.vendor.asgiproxy.utils.headers import is_from_databricks_proxy
+from dbtunnel.vendor.asgiproxy.utils.headers import is_from_databricks_proxy, is_streamlit
 
 log = logging.getLogger(__name__)
 
@@ -111,12 +111,9 @@ async def proxy_websocket(
     if q_string is not None and q_string.decode("utf-8") not in scope["path"]:
         scope["path"] = scope["path"] + "?" + q_string.decode("utf-8")
 
-    if scope["scheme"] == "wss":
-        # causes connection issues
-        scope["scheme"] = "ws"
-
-    print("scope", scope)
-
+    if is_streamlit(scope) is True:
+        # remove all x- headers for streamlit
+        scope["headers"] = [header for header in scope["headers"] if header[0].decode("utf-8").startswith("x-")]
 
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None

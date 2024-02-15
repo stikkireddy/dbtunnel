@@ -1,8 +1,5 @@
-import copy
-import threading
-
 from dbtunnel.tunnels import DbTunnel, DbTunnelProxy
-from dbtunnel.utils import process_file, execute, make_asgi_proxy_app
+from dbtunnel.utils import process_file, execute
 from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
 

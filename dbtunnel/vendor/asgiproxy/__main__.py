@@ -38,7 +38,7 @@ def main():
         "auth_config": {"token_auth": args.token_auth, "token_auth_workspace_url": args.token_auth_workspace_url}
     })
     proxy_context = ProxyContext(config)
-    app = make_simple_proxy_app(proxy_context)
+    app = make_simple_proxy_app(proxy_context, framework=args.framework)
     try:
         return uvicorn.run(host=args.host,
                            port=int(args.port),

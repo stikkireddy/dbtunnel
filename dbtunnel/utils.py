@@ -89,16 +89,6 @@ def pkill(process_name):
     except subprocess.CalledProcessError as e:
         print(f"Error killing processes: {e}")
 
-
-def make_asgi_proxy_app(proxy_config):
-    from dbtunnel.vendor.asgiproxy.context import ProxyContext
-    from dbtunnel.vendor.asgiproxy.simple_proxy import make_simple_proxy_app
-
-    proxy_context = ProxyContext(proxy_config)
-    app = make_simple_proxy_app(proxy_context)
-    return app
-
-
 # from langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/llms/databricks.py#L86
 def get_repl_context() -> Any:
     """Gets the notebook REPL context if running inside a Databricks notebook.
