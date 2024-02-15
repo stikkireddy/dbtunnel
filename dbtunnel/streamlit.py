@@ -74,7 +74,7 @@ class StreamlitTunnel(DbTunnel):
         import subprocess
         my_env = os.environ.copy()
         my_env["STREAMLIT_SERVER_PORT"] = f"{port}"
-        # my_env["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
+        my_env["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
         my_env["STREAMLIT_SERVER_HEADLESS"] = "true"
         subprocess.run(f"kill -9 $(lsof -t -i:{port})", capture_output=True, shell=True)
 

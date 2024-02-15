@@ -114,6 +114,9 @@ async def proxy_websocket(
     if is_streamlit(scope) is True:
         # remove all x- headers for streamlit
         scope["headers"] = [header for header in scope["headers"] if header[0].decode("utf-8").startswith("x-")]
+        scope["scheme"] = "ws"
+
+    print(f"scope: {scope}")
 
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
