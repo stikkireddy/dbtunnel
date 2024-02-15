@@ -209,6 +209,10 @@ class DbTunnel(abc.ABC):
                                datefmt_str=datefmt_str)
         return self
 
+    def _validate_options(self):
+        if self._share is True and self._basic_tunnel_auth["token_auth"] is True:
+            raise ValueError("Cannot use token auth with shared tunnel; remove token auth or remove sharing")
+
     def run(self):
         """
         Lifecycle:
@@ -218,6 +222,7 @@ class DbTunnel(abc.ABC):
         :return:
         """
         self._imports()
+        self._validate_options()
         if self._share is True and self._share_trigger_callback is not None:
             import nest_asyncio
             nest_asyncio.apply()
