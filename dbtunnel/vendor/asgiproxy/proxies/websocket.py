@@ -126,7 +126,6 @@ async def proxy_websocket(
                             not header[0].decode("utf-8").startswith("x-") and not header[0].decode("utf-8").startswith(
                                 "cf-")]
 
-
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
     try:
