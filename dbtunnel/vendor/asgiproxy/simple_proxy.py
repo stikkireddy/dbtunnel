@@ -13,8 +13,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
 from dbtunnel.vendor.asgiproxy.proxies.http import proxy_http
 from dbtunnel.vendor.asgiproxy.proxies.websocket import proxy_websocket
-from dbtunnel.vendor.asgiproxy.utils.headers import get_host_from_headers, is_databricks_host, \
-    add_if_databricks_proxy_scope, is_from_databricks_proxy
+from dbtunnel.vendor.asgiproxy.utils.headers import add_if_databricks_proxy_scope, is_from_databricks_proxy
 
 DB_TUNNEL_LOGIN_PATH = "/dbtunnel/login"
 
