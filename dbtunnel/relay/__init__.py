@@ -199,7 +199,7 @@ class DBTunnelRelayClient:
 
     def run_as_thread(self, output_func=None, success_callback=None):
         import threading
-        t = threading.Thread(target=self.run)
+        t = threading.Thread(target=self.run, args=(output_func, success_callback,))
         t.start()
         return t
 
