@@ -230,8 +230,8 @@ class DbTunnel(abc.ABC):
 
     def share_to_internet(self,
                           *,
-                          tunnel_host: str,
                           app_name: str,
+                          tunnel_host: str = None,
                           tunnel_port: int = 7000,
                           subdomain: str = None,
                           private: bool = False):
