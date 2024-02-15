@@ -197,7 +197,7 @@ class DBTunnelRelayClient:
                                                  f" Please use a different app name.")
             output_func(stmt.rstrip("\n"))
 
-    def run_as_thread(self):
+    def run_as_thread(self, output_func=None, success_callback=None):
         import threading
         t = threading.Thread(target=self.run)
         t.start()

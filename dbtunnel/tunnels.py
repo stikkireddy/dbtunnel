@@ -259,7 +259,7 @@ class DbTunnel(abc.ABC):
         def share_to_internet():
             try:
                 print("Access your app at: ", dbtunnel_relay_client.public_url())
-                dbtunnel_relay_client.run_as_thread()
+                dbtunnel_relay_client.run_as_thread(output_func=self._log.info)
             except Exception as e:
                 self._log.error(e)
 
