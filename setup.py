@@ -80,7 +80,8 @@ setup(
             "starlette",
             "uvicorn",
             "websockets",
-            "python-multipart"  # we are using this for auth check via form uploads
+            "python-multipart",  # we are using this for auth check via form uploads
+            "cachetools"
         ],
         "shiny": [
             "shiny",
