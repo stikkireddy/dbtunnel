@@ -9,7 +9,7 @@ from starlette.websockets import WebSocket
 from websockets.exceptions import ConnectionClosed
 
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
-from dbtunnel.vendor.asgiproxy.utils.headers import is_from_databricks_proxy, is_streamlit
+from dbtunnel.vendor.asgiproxy.utils.headers import is_from_databricks_proxy, is_streamlit, get_origin_port_from_scope
 
 log = logging.getLogger(__name__)
 
@@ -112,20 +112,31 @@ async def proxy_websocket(
         scope["path"] = scope["path"] + "?" + q_string.decode("utf-8")
 
     if is_streamlit(scope) is True:
-        # remove all x- headers for streamlit
-        scope["headers"] = [header for header in scope["headers"] if header[0].decode("utf-8").startswith("x-")]
-        scope["scheme"] = "ws"
+        def handle_header(header):
+            header_decoded = header[0].decode("utf-8").lower()
+            # these are important headers for streamlit
+            if header_decoded in ["origin"]:
+                return header[0], f'http://0.0.0.0:{get_origin_port_from_scope(scope)}'.encode("utf-8")
+            if header_decoded in ["accept-encoding"]:
+                return header[0], b"gzip, deflate"
+            return header
 
-    print(f"scope: {scope}")
+        # remove all x- headers for streamlit and cf- headers
+        scope["headers"] = [handle_header(header) for header in scope["headers"] if
+                            not header[0].decode("utf-8").startswith("x-") and not header[0].decode("utf-8").startswith(
+                                "cf-")]
+
 
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
     try:
         client_ws = WebSocket(scope=scope, receive=receive, send=send)
+        ctx = context.config.get_upstream_websocket_options(
+            scope=scope, client_ws=client_ws
+        )
+        print("ctx", ctx)
         async with context.session.ws_connect(
-                **context.config.get_upstream_websocket_options(
-                    scope=scope, client_ws=client_ws
-                )
+                **ctx
         ) as upstream_ws:
             await client_ws.accept(subprotocol=upstream_ws.protocol)
             ctx = WebSocketProxyContext(client_ws=client_ws, upstream_ws=upstream_ws)

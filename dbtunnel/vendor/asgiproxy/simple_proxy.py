@@ -13,7 +13,8 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
 from dbtunnel.vendor.asgiproxy.proxies.http import proxy_http
 from dbtunnel.vendor.asgiproxy.proxies.websocket import proxy_websocket
-from dbtunnel.vendor.asgiproxy.utils.headers import add_if_databricks_proxy_scope, is_from_databricks_proxy
+from dbtunnel.vendor.asgiproxy.utils.headers import add_if_databricks_proxy_scope, is_from_databricks_proxy, \
+    add_framework_to_scope, add_origin_port_to_scope
 
 DB_TUNNEL_LOGIN_PATH = "/dbtunnel/login"
 
@@ -135,6 +136,7 @@ async def handle_token_auth(
 def make_simple_proxy_app(
         proxy_context: ProxyContext,
         framework: str,
+        proxy_port: int,
         login_timeout: int = 3600,
         *,
         proxy_http_handler=proxy_http,
@@ -156,7 +158,9 @@ def make_simple_proxy_app(
         if scope["type"] == "lifespan":
             return None  # We explicitly do nothing here for this simple app.
 
+        add_framework_to_scope(scope, framework)
         add_if_databricks_proxy_scope(scope)
+        add_origin_port_to_scope(scope, proxy_port)
         if is_from_databricks_proxy(scope) is False:
             # remove all the driver proxy defaults this is usually when it comes from a relay/etc
             new_root_path = "/"

@@ -42,10 +42,20 @@ def is_from_databricks_proxy(scope: Scope) -> bool:
     return IS_DATABRICKS_PROXY_SCOPE_KEY in scope and scope[IS_DATABRICKS_PROXY_SCOPE_KEY] is True
 
 
+FRAMEWORK_KEY = "__framework"
+PROXY_PORT = "__proxy_port"
+
 def add_framework_to_scope(scope: Scope, framework: str) -> None:
-    scope["__framework"] = framework
+    scope[FRAMEWORK_KEY] = framework
+    return
+
+def add_origin_port_to_scope(scope: Scope, port: int) -> None:
+    scope[PROXY_PORT] = str(port)
     return
 
 
+def get_origin_port_from_scope(scope: Scope):
+    return scope.get(PROXY_PORT)
+
 def is_streamlit(scope: Scope) -> bool:
-    return Frameworks.STREAMLIT == scope.get("__framework", None)
+    return Frameworks.STREAMLIT == scope.get(FRAMEWORK_KEY, None)
