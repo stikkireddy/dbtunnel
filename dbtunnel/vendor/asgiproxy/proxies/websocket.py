@@ -133,7 +133,6 @@ async def proxy_websocket(
         ctx = context.config.get_upstream_websocket_options(
             scope=scope, client_ws=client_ws
         )
-        print("ctx", ctx)
         async with context.session.ws_connect(
                 **ctx
         ) as upstream_ws:
