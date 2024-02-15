@@ -49,12 +49,15 @@ class CodeServerTunnel(DbTunnel):
                 raise e
         self._log.info("Finished installing databricks cli")
 
-    def _install_extension(self, extension_id: str):
-        pass
+    def _install_extension(self, env, extension_id: str):
+        self._log.info(f"Installing extension: {extension_id}")
+        for stmt in execute(["code-server", "--install-extension", extension_id], shell=True, env=env):
+            self._log.info(stmt)
+        self._log.info(f"Finished Installed extension: {extension_id}")
 
-    def _install_extensions(self, extensions: list[str]):
+    def _install_extensions(self, env, extensions: list[str]):
         for extension in extensions:
-            self._install_extension(extension)
+            self._install_extension(env, extension)
 
     def _run(self):
         import subprocess
@@ -75,6 +78,19 @@ class CodeServerTunnel(DbTunnel):
         my_env = os.environ.copy()
         my_env["VSCODE_PROXY_URI"] = self._proxy_settings.url_base_path + "wss"
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
+
+        self._log.info(f"Installing default plugins!")
+        default_plugins = [
+            "ms-python.python",
+            "ms-toolsai.jupyter",
+            "ms-toolsai.jupyter-renderers",
+            "ms-toolsai.jupyter-keymap",
+            "ms-toolsai.vscode-jupyter-cell-tags",
+            "databricks.databricks",
+            "databricks.sqltools-databricks-driver",
+            "rangav.vscode-thunder-client",
+        ]
+        self._install_extensions(my_env, default_plugins)
 
         # "VSCODE_PROXY_URI=“./driver-proxy/o/<id>/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
         self._log.info(f"Deploying code server on port: {self._port}")
