@@ -161,7 +161,7 @@ def make_simple_proxy_app(
             # remove all the driver proxy defaults this is usually when it comes from a relay/etc
             new_root_path = "/"
             current_root_path = scope["root_path"]
-            if scope["path"].startswith():
+            if scope["path"].startswith(current_root_path):
                 scope["path"] = scope["path"].replace(current_root_path, "")
             scope["root_path"] = new_root_path
 
