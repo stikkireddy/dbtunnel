@@ -137,7 +137,8 @@ async def proxy_http(
             print(f"Failed to connect to server the second time for same connection; retrying in 1 second: {str(cce)}")
             user_response = Response(
                 status_code=502,
-                content="Bad Gateway waiting for server to respond",
+                content="Unable to connect to app waiting for app server to respond. "
+                        "Refresh a few times otherwise restart.",
             )
 
     return await user_response(scope, receive, send)
