@@ -111,6 +111,8 @@ async def proxy_websocket(
     if q_string is not None and q_string.decode("utf-8") not in scope["path"]:
         scope["path"] = scope["path"] + "?" + q_string.decode("utf-8")
 
+    print("scope", scope)
+
 
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
