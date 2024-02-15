@@ -117,9 +117,17 @@ async def proxy_http(
     except aiohttp.client_exceptions.ClientConnectorError as cce:
         print(f"Failed to connect to server; retrying in 1 second: {str(cce)}")
         await asyncio.sleep(1)
-        proxy_response = await get_proxy_response(
-            context=context, scope=scope, receive=receive
-        )
+        try:
+            proxy_response = await get_proxy_response(
+                context=context, scope=scope, receive=receive
+            )
+        except aiohttp.client_exceptions.ClientConnectorError as cce:
+            print(f"Failed to connect to server the second time for same connection; retrying in 1 second: {str(cce)}")
+            proxy_response = Response(
+                status_code=502,
+                content="Bad Gateway waiting for server to respond",
+            )
+
     user_response = await convert_proxy_response_to_user_response(
         context=context, scope=scope, proxy_response=proxy_response
     )
