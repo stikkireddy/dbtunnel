@@ -12,6 +12,10 @@ from urllib.parse import urlparse
 from dbtunnel.utils import pkill, ctx, get_logger, execute
 
 
+class DBTunnelError(Exception):
+    pass
+
+
 @dataclass
 class ProxySettings:
     proxy_url: str
@@ -211,7 +215,7 @@ class DbTunnel(abc.ABC):
 
     def _validate_options(self):
         if self._share is True and self._basic_tunnel_auth["token_auth"] is True:
-            raise ValueError("Cannot use token auth with shared tunnel; remove token auth or remove sharing")
+            raise DBTunnelError("Cannot use token auth with shared tunnel; remove token auth or remove sharing")
 
     def run(self):
         """
