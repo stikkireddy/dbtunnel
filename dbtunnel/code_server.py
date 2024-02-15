@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from dbtunnel.tunnels import DbTunnel, get_current_username
 from dbtunnel.utils import execute
@@ -34,12 +35,26 @@ class CodeServerTunnel(DbTunnel):
         return f'<a href="{self._proxy_settings.proxy_url}">Click to go to {self._flavor} App!</a>'
 
     def _install_databricks_cli(self):
-        self._log.info("Installing databricks cli")
+        self._log.info("Attempting to install databricks cli")
         command = "curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh"
         env_copy = os.environ.copy()
-        for stmt in execute([command], shell=True, env=env_copy):
-            self._log.info(stmt)
+        already_installed = False
+        try:
+            for stmt in execute([command], shell=True, env=env_copy):
+                if "already exists" in stmt:
+                    already_installed = True
+                self._log.info(stmt)
+        except subprocess.CalledProcessError as e:
+            if already_installed is False:
+                raise e
         self._log.info("Finished installing databricks cli")
+
+    def _install_extension(self, extension_id: str):
+        pass
+
+    def _install_extensions(self, extensions: list[str]):
+        for extension in extensions:
+            self._install_extension(extension)
 
     def _run(self):
         import subprocess
