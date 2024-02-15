@@ -36,6 +36,23 @@ def get_cloud(context: Dict[str, Any]) -> str:
     return "aws"
 
 
+def remove_lowest_subdomain_from_host(url):
+    parsed_url = urlparse(url)
+    print(parsed_url)
+    host = parsed_url.netloc if parsed_url.netloc else parsed_url.path
+    parts = host.split('.')
+    print(parts)
+    # Check if there are subdomains to remove
+    if len(parts) > 2:
+        # Remove the lowest subdomain
+        parts.pop(0)
+
+    # Reconstruct the modified host
+    modified_host = '.'.join(parts)
+
+    return modified_host
+
+
 def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int) -> ProxySettings:
     cloud_norm = cloud.lower()
     if cloud_norm not in ["aws", "azure"]:
@@ -45,10 +62,12 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
         "azure": "https://adb-dp-",
     }
     suffix_url_settings = {
-        "aws": "cloud.databricks.com",
         "azure": "azuredatabricks.net",
     }
-    # org_id = self._context["tags"]["orgId"]
+    if cloud_norm == "aws":
+        suffix = remove_lowest_subdomain_from_host(ctx.host)
+        suffix_url_settings["aws"] = suffix
+
     org_shard = ""
     # org_shard doesnt need a suffix of "." for dnsname its handled in building the url
     # only azure right now does dns sharding
@@ -56,7 +75,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
     if cloud_norm == "azure":
         org_shard_id = int(org_id) % 20
         org_shard = f".{org_shard_id}"
-    # cluster_id = self._context["tags"]["clusterId"]
+
     url_base_path_no_port = f"/driver-proxy/o/{org_id}/{cluster_id}"
     url_base_path = f"{url_base_path_no_port}/{port}/"
     return ProxySettings(
@@ -214,28 +233,29 @@ class DbTunnel(abc.ABC):
                           tunnel_host: str,
                           app_name: str,
                           tunnel_port: int = 7000,
-                          subdomain: str = None, ):
+                          subdomain: str = None,
+                          private: bool = False):
         self._share = True
-        from dbtunnel.frpc import DBTunnelConfig
-        db_tunnel_config = DBTunnelConfig(
+        from dbtunnel.relay import DBTunnelRelayClient
+        dbtunnel_relay_client = DBTunnelRelayClient(
             app_name=app_name,
             tunnel_host=tunnel_host,
             tunnel_port=tunnel_port,
             local_port=self._port,
-            subdomain=subdomain
+            subdomain=subdomain,
+            private=private,
         )
         print("Downloading required binary if it does not exist!")
-        db_tunnel_config.download_on_linux()
+        dbtunnel_relay_client.download_on_linux()
 
         def share_to_internet():
-            db_tunnel_config.publish()
             try:
-                db_tunnel_config.run_as_thread()
+                dbtunnel_relay_client.run_as_thread()
             except Exception as e:
                 self._log.error(e)
 
         self._share_trigger_callback = share_to_internet
-        print("Access your app at: ", db_tunnel_config.public_url())
+        print("Access your app at: ", dbtunnel_relay_client.public_url())
         return self
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels

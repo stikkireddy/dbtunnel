@@ -92,7 +92,6 @@ setup(
         ],
         "cli": [
             "click",
-            "toml"
         ],
     },
     classifiers=[

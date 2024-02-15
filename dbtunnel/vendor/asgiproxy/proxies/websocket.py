@@ -9,6 +9,7 @@ from starlette.websockets import WebSocket
 from websockets.exceptions import ConnectionClosed
 
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
+from dbtunnel.vendor.asgiproxy.utils.headers import is_from_databricks_proxy
 
 log = logging.getLogger(__name__)
 
@@ -19,11 +20,11 @@ class UnknownMessage(ValueError):
 
 class WebSocketProxyContext:
     def __init__(
-        self,
-        *,
-        id: str = None,
-        client_ws: WebSocket,
-        upstream_ws: ClientWebSocketResponse,
+            self,
+            *,
+            id: str = None,
+            client_ws: WebSocket,
+            upstream_ws: ClientWebSocketResponse,
     ) -> None:
         self.id = str(id or uuid.uuid4())
         self.client_ws = client_ws
@@ -96,24 +97,24 @@ class WebSocketProxyContext:
 
 
 async def proxy_websocket(
-    *, context: ProxyContext, scope: Scope, receive: Receive, send: Send
+        *, context: ProxyContext, scope: Scope, receive: Receive, send: Send
 ) -> None:
-
     # query params are important for socket.io for websocket upgrade
-    root_path = scope["root_path"]
-    if scope["path"].startswith(root_path):
-        scope["path"] = scope["path"].replace(root_path, "")
-    if scope.get("query_string") is not None:
-        scope["path"] = scope["path"] + "?" + scope["query_string"].decode("utf-8")
+    if is_from_databricks_proxy(scope) is True:
+        root_path = scope["root_path"]
+        if scope["path"].startswith(root_path):
+            scope["path"] = scope["path"].replace(root_path, "")
+        if scope.get("query_string") is not None:
+            scope["path"] = scope["path"] + "?" + scope["query_string"].decode("utf-8")
 
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
     try:
         client_ws = WebSocket(scope=scope, receive=receive, send=send)
         async with context.session.ws_connect(
-            **context.config.get_upstream_websocket_options(
-                scope=scope, client_ws=client_ws
-            )
+                **context.config.get_upstream_websocket_options(
+                    scope=scope, client_ws=client_ws
+                )
         ) as upstream_ws:
             await client_ws.accept(subprotocol=upstream_ws.protocol)
             ctx = WebSocketProxyContext(client_ws=client_ws, upstream_ws=upstream_ws)

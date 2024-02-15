@@ -13,9 +13,11 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from dbtunnel.vendor.asgiproxy.context import ProxyContext
 from dbtunnel.vendor.asgiproxy.proxies.http import proxy_http
 from dbtunnel.vendor.asgiproxy.proxies.websocket import proxy_websocket
-
+from dbtunnel.vendor.asgiproxy.utils.headers import get_host_from_headers, is_databricks_host, \
+    add_if_databricks_proxy_scope, is_from_databricks_proxy
 
 DB_TUNNEL_LOGIN_PATH = "/dbtunnel/login"
+
 
 @functools.lru_cache(maxsize=0)
 def get_login_content(*,
@@ -52,6 +54,7 @@ def get_databricks_user_header(scope: Scope) -> DatabricksProxyHeaders:
             hdrs.user_id = header[1].decode("utf-8")
     return hdrs
 
+
 def validate_user(url: str, user: str, token: str) -> bool:
     try:
         w = WorkspaceClient(
@@ -62,10 +65,12 @@ def validate_user(url: str, user: str, token: str) -> bool:
     except Exception:
         return False
 
+
 # Simple state machine, user is not in authloop when ttl cache has their email with token
 class AuthLoopState(Enum):
     StillInAuthLoop = "STILL_IN_AUTH_LOOP"
     NotInAuthLoop = "NOT_IN_AUTH_LOOP"
+
 
 async def handle_token_auth(
         proxy_context: ProxyContext,
@@ -73,17 +78,19 @@ async def handle_token_auth(
         scope: Scope,
         send: Send,
         receive: Receive):
-
     workspace_url = proxy_context.config.token_auth_workspace_url
-    root_path = scope["root_path"]
-    if scope["path"].startswith(root_path):
-        scope["path"] = scope["path"].replace(root_path, "")
+    if is_from_databricks_proxy(scope) is True:
+        root_path = scope["root_path"]
+        if scope["path"].startswith(root_path):
+            scope["path"] = scope["path"].replace(root_path, "")
+    else:
+        root_path = "/"
     dbx_ctx_headers = get_databricks_user_header(scope)
     login_page_content = get_login_content(
-                    workspace_url=workspace_url,
-                    user_name=dbx_ctx_headers.user_name,
-                    root_path=root_path
-                )
+        workspace_url=workspace_url,
+        user_name=dbx_ctx_headers.user_name,
+        root_path=root_path
+    )
 
     if scope["path"] == DB_TUNNEL_LOGIN_PATH:
         request = Request(scope, receive)
@@ -122,7 +129,7 @@ async def handle_token_auth(
 
     if token is not None:
         scope["headers"].append((b"Authorization", f"Bearer {token}".encode("utf-8")))
-    
+
     return AuthLoopState.NotInAuthLoop
 
 
@@ -142,16 +149,22 @@ def make_simple_proxy_app(
     """
 
     # we assume there is not going to be more than 250k users
-    cache = TTLCache(maxsize=250000, ttl=login_timeout) # just dont use it if auth not needed
+    cache = TTLCache(maxsize=250000, ttl=login_timeout)  # just dont use it if auth not needed
 
     async def app(scope: Scope, receive: Receive, send: Send):  # noqa: ANN201
-
 
         if scope["type"] == "lifespan":
             return None  # We explicitly do nothing here for this simple app.
 
+        if is_databricks_host(get_host_from_headers(scope)) is False:
+            scope["_is_databricks_proxy_url"] = False
+
+        print("scope", scope)
+        add_if_databricks_proxy_scope(scope)
+
         # we do not have enough information in websocket proxied headers to function auth
-        if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and scope["type"] == "http":
+        if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and \
+                scope["type"] == "http":
             resp = await handle_token_auth(proxy_context, cache, scope, send, receive)
             if resp == AuthLoopState.StillInAuthLoop:
                 return None
