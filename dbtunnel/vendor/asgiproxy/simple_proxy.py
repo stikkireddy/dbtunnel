@@ -160,8 +160,11 @@ def make_simple_proxy_app(
         if is_from_databricks_proxy(scope) is False:
             # remove all the driver proxy defaults this is usually when it comes from a relay/etc
             root_path = "/"
+            scope["root_path"] = root_path
             if scope["path"].startswith(root_path):
                 scope["path"] = scope["path"].replace(root_path, "")
+
+        print("scope", scope)
 
         # we do not have enough information in websocket proxied headers to function auth
         if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and \
