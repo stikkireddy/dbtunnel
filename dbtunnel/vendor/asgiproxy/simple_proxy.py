@@ -164,8 +164,6 @@ def make_simple_proxy_app(
                 scope["path"] = scope["path"].replace(current_root_path, "")
             scope["root_path"] = new_root_path
 
-        print("scope", scope)
-
         # we do not have enough information in websocket proxied headers to function auth
         if proxy_context.config.token_auth_workspace_url is not None and proxy_context.config.token_auth is True and \
                 scope["type"] == "http":
