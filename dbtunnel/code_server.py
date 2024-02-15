@@ -7,7 +7,11 @@ from dbtunnel.utils import execute
 
 class CodeServerTunnel(DbTunnel):
 
-    def __init__(self, directory_path: str = None, repo_name: str = None, port: int = 9988):
+    def __init__(self,
+                 directory_path: str = None,
+                 repo_name: str = None,
+                 port: int = 9988,
+                 extension_ids: list[str] = None):
         # Check if either directory_path or repo_name is provided
         if directory_path is None and repo_name is None:
             raise ValueError("Either directory_path or repo_name must be provided.")
@@ -23,6 +27,8 @@ class CodeServerTunnel(DbTunnel):
             if not os.path.exists(directory_path):
                 raise ValueError(f"The provided directory_path '{directory_path}' does not exist.")
             self._dir_path = directory_path
+
+        self._extension_ids = extension_ids or []
 
         # Continue with the initialization
         super().__init__(port, "code-server")
@@ -50,7 +56,6 @@ class CodeServerTunnel(DbTunnel):
         self._log.info("Finished installing databricks cli")
 
     def _install_extension(self, env, extension_id: str):
-        self._log.info(f"Installing extension: {extension_id}")
         for stmt in execute(["code-server", "--install-extension", extension_id], shell=True, env=env):
             self._log.info(stmt)
         self._log.info(f"Finished Installed extension: {extension_id}")
@@ -90,7 +95,7 @@ class CodeServerTunnel(DbTunnel):
             "databricks.sqltools-databricks-driver",
             "rangav.vscode-thunder-client",
         ]
-        self._install_extensions(my_env, default_plugins)
+        self._install_extensions(my_env, list(set(default_plugins + self._extension_ids)))
 
         # "VSCODE_PROXY_URI=“./driver-proxy/o/<id>/1201-175053-rt06lneb/8080/wss” code-server --bind-addr 0.0.0.0:8080  --auth none"
         self._log.info(f"Deploying code server on port: {self._port}")

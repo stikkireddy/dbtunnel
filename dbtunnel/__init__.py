@@ -65,9 +65,10 @@ class AppTunnels:
         return SolaraAppTunnel(path, port)
 
     @staticmethod
-    def code_server(directory_path: str = None, repo_name: str = None, port: int = 9988):
+    def code_server(directory_path: str = None, repo_name: str = None, port: int = 9988,
+                    extension_ids: list[str] = None):
         from dbtunnel.code_server import CodeServerTunnel
-        return CodeServerTunnel(directory_path, repo_name, port)
+        return CodeServerTunnel(directory_path, repo_name, port, extension_ids)
 
     @staticmethod
     def chainlit(script_path: str, cwd: str = None, port: int = 8000):
