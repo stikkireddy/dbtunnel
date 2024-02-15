@@ -36,7 +36,8 @@ class CodeServerTunnel(DbTunnel):
     def _install_databricks_cli(self):
         self._log.info("Installing databricks cli")
         command = "curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh"
-        for stmt in execute([command], shell=True):
+        env_copy = os.environ.copy()
+        for stmt in execute([command], shell=True, env=env_copy):
             self._log.info(stmt)
         self._log.info("Finished installing databricks cli")
 
