@@ -16,7 +16,7 @@ setup(
     url="https://github.com/stikkireddy/dbtunnel",
     packages=find_packages(),
     install_requires=[],
-    setup_requires=["setuptools_scm"],
+    setup_requires=["setuptools_scm", "nest_asyncio"],
     use_scm_version=True,
     # TODO: start refactoring nest_asyncio only when async.run is needed
     extras_require={
@@ -24,39 +24,32 @@ setup(
             # Specify dependencies for building documentation here
             "fastapi",
             "uvicorn",
-            "nest_asyncio",
         ],
         "streamlit": [
             # Specify dependencies for building documentation here
             "streamlit",
             "pyarrow>=11",
-            "nest_asyncio",
         ],
         "gradio": [
             # Specify dependencies for building documentation here
             "gradio==3.50.2",
-            "nest_asyncio",
         ],
         "nicegui": [
             # Specify dependencies for building documentation here
             "nicegui",
-            "nest_asyncio",
         ],
         "bokeh": [
             "bokeh",
-            "nest_asyncio",
         ],
         "flask": [
             "flask",
             "fastapi",
             "uvicorn", # no websockets
-            "nest_asyncio",
         ],
         "dash": [
             "dash",
             "fastapi",
             "uvicorn", # no websockets
-            "nest_asyncio",
         ],
         "sql": [
             "databricks-sql-connector"
@@ -72,7 +65,6 @@ setup(
         ],
         "chainlit": [
             "chainlit",
-            "nest_asyncio",
             "uvicorn",
         ],
         "asgiproxy": [
@@ -85,7 +77,6 @@ setup(
         ],
         "shiny": [
             "shiny",
-            "nest_asyncio",
         ],
         "dev": [
             "mkdocs-material",
