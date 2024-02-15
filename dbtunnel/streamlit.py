@@ -1,8 +1,9 @@
 import copy
 import threading
 
-from dbtunnel.tunnels import DbTunnel
+from dbtunnel.tunnels import DbTunnel, DbTunnelProxy
 from dbtunnel.utils import process_file, execute, make_asgi_proxy_app
+from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
 
 def make_streamlit_local_proxy_config(service_host: str = "0.0.0.0",
@@ -52,28 +53,24 @@ class StreamlitTunnel(DbTunnel):
         port = self._port
         url_base_path = self._proxy_settings.url_base_path
 
-        auth_config = copy.deepcopy(self._basic_tunnel_auth)
+        proxy_service = DbTunnelProxy(
+            proxy_port=port,
+            service_port=streamlit_service_port,
+            url_base_path=url_base_path,
+            framework=Frameworks.STREAMLIT,
+            token_auth=self._basic_tunnel_auth["token_auth"],
+            token_auth_workspace_url=self._basic_tunnel_auth["token_auth_workspace_url"],
+            cwd=None
+        )
 
-        def run_uvicorn_app():
-            self._log.info("Starting proxy server...")
-            app = make_asgi_proxy_app(make_streamlit_local_proxy_config(
-                service_port=streamlit_service_port,
-                auth_config=auth_config
-            ))
-            import uvicorn
-            return uvicorn.run(host="0.0.0.0",
-                               loop="asyncio",
-                               port=int(port),
-                               app=app,
-                               root_path=url_base_path)
+        proxy_service.start()
 
-        uvicorn_thread = threading.Thread(target=run_uvicorn_app)
-        # Start the thread in the background
-        uvicorn_thread.start()
         self._log.info(f"Use this link to access the Streamlit UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
         with process_file(self._script_path) as file_path:
             self.run_streamlit(file_path, streamlit_service_port)
+
+        proxy_service.wait()
 
     def run_streamlit(self, path, port):
         import os
