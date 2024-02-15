@@ -84,6 +84,7 @@ support the access to request object to access headers, etc.
 * [ ] Llama-2-7b
 * [ ] mpt-7b
 * [ ] Streaming support (vllm, etc.)
+* [x] Streaming support foundation model api
 * [x] Typewriter effect
 
 ### Tunnel Support:
@@ -91,6 +92,7 @@ support the access to request object to access headers, etc.
 * [x] ngrok
 * [ ] devtunnels
 * [ ] cloudflared
+* [x] dbtunnel custom relay (private only)
 
 
 
