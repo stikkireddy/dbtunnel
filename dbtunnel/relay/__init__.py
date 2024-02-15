@@ -160,6 +160,8 @@ class DBTunnelRelayClient:
                     self._log_level,
                     "--user",
                     self._user]
+            if any([item is None or isinstance(item, str) is False for item in cmd]):
+                raise TunnelConfigError(f"Invalid command: {cmd}")
             return cmd
 
         else:

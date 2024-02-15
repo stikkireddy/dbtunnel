@@ -76,7 +76,7 @@ def verify_installation(frpc_exec_path: Path):
         raise ClickException("Error: Unsupported platform. Only MacOS is supported for native connection.")
     if is_frpc_installed(frpc_exec_path) is False:
         # just double verify
-        is_frpc_installed(frpc_exec_path, silent=True)
+        is_frpc_installed(frpc_exec_path)
         click.echo(f"✅  frpc is installed at path: {frpc_exec_path}.")
 
 
@@ -119,12 +119,17 @@ def open_browser(url):
               help='The subdomain of the app. Should be unique no spaces.')
 @click.option("--private", is_flag=True, show_default=True, default=False,
               help="Causes the tunnel to be private and secured as setup by WAF rules.")
-@click.option("--ssh", is_flag=True, show_default=True, default=False, help="Use ssh instead of native cli for tunnel.")
+@click.option("--ssh", is_flag=True, show_default=True, default=False,
+              help="Use ssh instead of native cli for tunnel.")
+@click.option("--native", is_flag=True, show_default=True, default=False,
+              help="Use native instead of ssh for tunnel.")
 def bind(**kwargs):
     """
     Bind a local port to a dbtunnel server domain.
     """
     use_ssh_mode = kwargs.get('ssh')
+    use_native_mode = kwargs.get('native')
+    use_best_mode = use_ssh_mode is False and use_native_mode is False
     app_name = kwargs.get('app_name')
     tunnel_host = kwargs.get('tunnel_host').replace("https://", "").replace("https://", "").replace("/", "")
     tunnel_port = kwargs.get('tunnel_port')
@@ -135,13 +140,26 @@ def bind(**kwargs):
     headless = kwargs.get('headless')
     frpc_native_executable_path = None
 
-    if use_ssh_mode is False:
-        # usually you have ssh client installed on mac
+    def native_flow():
         click.echo('Checking if binaries is installed')
         verify_homebrew()
-        frpc_native_executable_path = get_frpc_homebrew_path()
-        verify_installation(frpc_native_executable_path)
+        exec_path = get_frpc_homebrew_path()
+        verify_installation(exec_path)
         click.echo('✅  Binaries Properly Installed')
+        return exec_path
+
+    if use_native_mode is True:
+        # usually you have ssh client installed on mac
+        frpc_native_executable_path = native_flow()
+
+    if use_best_mode is True:
+        try:
+            frpc_native_executable_path = native_flow()
+        except ClickException:
+            click.echo("❌  Native mode failed. Trying ssh tunnel instead.")
+            use_ssh_mode = True
+            del use_native_mode
+
 
     click.echo('✅  Using SSH Tunnel')
     click.echo(f'✅  Pushing {app_name} to dbtunnel server via: {"native" if use_ssh_mode is False else "ssh tunnel"}')
@@ -160,7 +178,8 @@ def bind(**kwargs):
 
         click.clear()
         click.echo(click.style(f'DBTunnel by @stikkireddy\n', fg='green', bold=True))
-        click.echo(f'💼 App Name: {click.style(app_name, fg="green")}\n')
+        click.echo(f'💼 App Name: {click.style(app_name, fg="green")} | '
+                   f'Type: {click.style("TCP over SSH Tunnel" if use_ssh_mode is True else "TCP Tunnel", fg="green")}\n')
         local_url = f'http://{local_host}:{local_port}'
         local_url = f"\033]8;;{local_url}\033\\{local_url}\033]8;;\033\\"
         styled_local_url = click.style(local_url, fg="cyan")
@@ -168,6 +187,7 @@ def bind(**kwargs):
         url = db_tunnel_relay_client.public_url()
         hyper_link = f'\033]8;;{url}\033\\{url}\033]8;;\033\\'
         click.echo(f'🔗 {"SSO Secured" if is_private else "Public Sharable"} URL: {click.style(hyper_link, fg="green")}\n',)
+
         click.echo(click.style('Tunnel Logs: ', fg='green', bold=True))
         open_browser_f = functools.partial(open_browser, url)
         db_tunnel_relay_client.run(output_func=click.echo,
