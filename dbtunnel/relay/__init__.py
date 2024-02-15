@@ -140,7 +140,7 @@ class DBTunnelRelayClient:
     def _get_cmd(self):
         if self._mode == 'native':
             # return [self._executable_path, "-c", self.get_file_path()]
-            return [self._executable_path,
+            cmd = [self._executable_path,
                     "http",
                     "--server-addr",
                     self._tunnel_host,
@@ -160,6 +160,9 @@ class DBTunnelRelayClient:
                     self._log_level,
                     "--user",
                     self._user]
+            print(" ".join(cmd))
+            return cmd
+
         else:
             return ["ssh", "-R",
                     f":8000:{self._local_host}:{self._local_port}",
