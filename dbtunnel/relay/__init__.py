@@ -160,7 +160,6 @@ class DBTunnelRelayClient:
                     self._log_level,
                     "--user",
                     self._user]
-            print(" ".join(cmd))
             return cmd
 
         else:
