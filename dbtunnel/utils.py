@@ -146,6 +146,11 @@ class DatabricksContext:
         return WorkspaceClient(host=self.host,
                                token=self.token).current_user.me().user_name
 
+    @cached_property
+    def current_username_alphanumeric(self) -> str:
+        sanitized = self.current_user_name.split("@")[0].replace(".", "-")
+        return "".join(c for c in sanitized if c.isalnum() or c == "-")
+
 
 @dataclass
 class WarehouseDetails:

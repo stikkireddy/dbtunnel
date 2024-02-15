@@ -244,6 +244,7 @@ class DbTunnel(abc.ABC):
             local_port=self._port,
             subdomain=subdomain,
             private=private,
+            user=ctx.current_user_name
         )
         print("Downloading required binary if it does not exist!")
         dbtunnel_relay_client.download_on_linux()
