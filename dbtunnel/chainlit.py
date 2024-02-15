@@ -3,8 +3,9 @@ import functools
 import re
 import threading
 
-from dbtunnel.tunnels import DbTunnel, ProxySettings
+from dbtunnel.tunnels import DbTunnel, ProxySettings, DbTunnelProxy
 from dbtunnel.utils import execute, make_asgi_proxy_app
+from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
 
 def make_chainlit_local_proxy_config(
@@ -97,36 +98,26 @@ class ChainlitAppTunnel(DbTunnel):
         import os
 
         chainlit_service_port_no_share = 9090
+        proxy_service = None
         if self._share is False:
 
             url_base_path = self._proxy_settings.url_base_path
             port = self._port
 
             # nest uvicorn to the ipynotebook asyncio eventloop so restarting kernel kills server
-            import nest_asyncio
-            nest_asyncio.apply()
+            proxy_service = DbTunnelProxy(
+                proxy_port=port,
+                service_port=chainlit_service_port_no_share,
+                url_base_path=url_base_path,
+                framework=Frameworks.CHAINLIT,
+                token_auth=self._basic_tunnel_auth["token_auth"],
+                token_auth_workspace_url=self._basic_tunnel_auth["token_auth_workspace_url"],
+                cwd=self._cwd
+            )
 
-            # avoid serialization issues by passing self object; TODO: clean this up
-            auth_config = copy.deepcopy(self._basic_tunnel_auth)
+            proxy_service.start()
 
-            def run_uvicorn_app():
-                self._log.info("Starting proxy server...")
-                app = make_asgi_proxy_app(make_chainlit_local_proxy_config(
-                    url_base_path,
-                    service_port=chainlit_service_port_no_share,
-                    auth_config=auth_config
-                ))
-                import uvicorn
-                return uvicorn.run(host="0.0.0.0",
-                                   loop="asyncio",
-                                   port=int(port),
-                                   app=app,
-                                   root_path=url_base_path)
-
-            uvicorn_thread = threading.Thread(target=run_uvicorn_app)
-            # Start the thread in the background
-            uvicorn_thread.start()
-            self._log.info(f"Use this link to access the UI in Databricks: \n{self._proxy_settings.proxy_url}")
+        self._log.info(f"Use this link to access the Chainlit UI in Databricks: \n{self._proxy_settings.proxy_url}")
 
         self._log.info("Starting chainlit...")
 
@@ -141,6 +132,9 @@ class ChainlitAppTunnel(DbTunnel):
         self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env, cwd=self._cwd):
             self._log.info(path)
+
+        if proxy_service is not None:
+            proxy_service.wait()
 
     def __init__(self, chainlit_script_path: str, cwd: str = None, port: int = 8000):
         super().__init__(port, "chainlit")
