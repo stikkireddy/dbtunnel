@@ -254,12 +254,12 @@ class DbTunnel(abc.ABC):
 
         def share_to_internet():
             try:
+                print("Access your app at: ", dbtunnel_relay_client.public_url())
                 dbtunnel_relay_client.run_as_thread()
             except Exception as e:
                 self._log.error(e)
 
         self._share_trigger_callback = share_to_internet
-        print("Access your app at: ", dbtunnel_relay_client.public_url())
         return self
 
     # right now only ngrok is supported so auth token is required field but in future there may be devtunnels
