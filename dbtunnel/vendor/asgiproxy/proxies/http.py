@@ -1,3 +1,4 @@
+import asyncio
 import fnmatch
 from typing import AsyncGenerator, Union
 
@@ -109,9 +110,16 @@ async def proxy_http(
         if scope["path"].startswith(root_path):
             scope["path"] = scope["path"].replace(root_path, "")
 
-    proxy_response = await get_proxy_response(
-        context=context, scope=scope, receive=receive
-    )
+    try:
+        proxy_response = await get_proxy_response(
+            context=context, scope=scope, receive=receive
+        )
+    except aiohttp.client_exceptions.ClientConnectorError as cce:
+        print(f"Failed to connect to server; retrying in 1 second: {str(cce)}")
+        await asyncio.sleep(1)
+        proxy_response = await get_proxy_response(
+            context=context, scope=scope, receive=receive
+        )
     user_response = await convert_proxy_response_to_user_response(
         context=context, scope=scope, proxy_response=proxy_response
     )
