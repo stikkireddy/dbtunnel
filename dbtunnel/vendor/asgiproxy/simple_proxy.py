@@ -159,10 +159,11 @@ def make_simple_proxy_app(
         add_if_databricks_proxy_scope(scope)
         if is_from_databricks_proxy(scope) is False:
             # remove all the driver proxy defaults this is usually when it comes from a relay/etc
-            root_path = "/"
-            scope["root_path"] = root_path
-            if scope["path"].startswith(root_path):
-                scope["path"] = scope["path"].replace(root_path, "")
+            new_root_path = "/"
+            current_root_path = scope["root_path"]
+            if scope["path"].startswith():
+                scope["path"] = scope["path"].replace(current_root_path, "")
+            scope["root_path"] = new_root_path
 
         print("scope", scope)
 
