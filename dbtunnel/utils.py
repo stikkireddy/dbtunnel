@@ -51,14 +51,17 @@ def ensure_python_path(env):
             env["PYTHONPATH"] = f"{py_path}:{site_packages}"
 
 
-def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True):
+def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True, shell=False):
     if ensure_python_site_packages:
         ensure_python_path(env)
     import subprocess
+    if shell is True:
+        cmd = " ".join(cmd)
     popen = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              universal_newlines=True,
+                             shell=shell,
                              env=env,
                              cwd=cwd,
                              bufsize=1)

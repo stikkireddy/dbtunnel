@@ -33,6 +33,13 @@ class CodeServerTunnel(DbTunnel):
         # must end with a "/" for it to not redirect
         return f'<a href="{self._proxy_settings.proxy_url}">Click to go to {self._flavor} App!</a>'
 
+    def _install_databricks_cli(self):
+        self._log.info("Installing databricks cli")
+        command = "curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh"
+        for stmt in execute([command], shell=True):
+            self._log.info(stmt)
+        self._log.info("Finished installing databricks cli")
+
     def _run(self):
         import subprocess
 
@@ -44,6 +51,8 @@ class CodeServerTunnel(DbTunnel):
         # Equivalent Python subprocess command with piping
         subprocess.run(f'curl -fsSL {url} | sh', check=True, shell=True)
         self._log.info("Installed code server")
+
+        self._install_databricks_cli()
 
         import os
         import subprocess

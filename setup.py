@@ -16,7 +16,7 @@ setup(
     url="https://github.com/stikkireddy/dbtunnel",
     packages=find_packages(),
     install_requires=[],
-    setup_requires=["setuptools_scm", "nest_asyncio"],
+    setup_requires=["setuptools_scm", "nest_asyncio", "databricks-sdk>=0.18.0"],
     use_scm_version=True,
     # TODO: start refactoring nest_asyncio only when async.run is needed
     extras_require={

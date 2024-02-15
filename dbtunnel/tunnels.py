@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Dict, Any, Literal, Optional
 from urllib.parse import urlparse
 
+from databricks.sdk import WorkspaceClient
+
 from dbtunnel.utils import pkill, ctx, get_logger, execute
 
 
@@ -132,6 +134,13 @@ class DbTunnel(abc.ABC):
         self._log: logging.Logger = get_logger()  # initialize logger during the run method
         self._basic_tunnel_auth = {"token_auth": False, "token_auth_workspace_url": None}
 
+    def _is_single_user_cluster(self):
+        ws = WorkspaceClient()
+        cluster = ws.clusters.get(self._cluster_id)
+        from databricks.sdk.service.compute import DataSecurityMode
+        return (cluster.data_security_mode in [DataSecurityMode.SINGLE_USER, DataSecurityMode.LEGACY_SINGLE_USER]) \
+            and cluster.single_user_name == get_current_username()
+
     @abc.abstractmethod
     def _imports(self):
         pass
@@ -148,13 +157,18 @@ class DbTunnel(abc.ABC):
     def shared(self):
         return self._share
 
-    def inject_auth(self, host: str = None, token: str = None):
+    def inject_auth(self, host: str = None, token: str = None, write_cfg: bool = False):
         if os.getenv("DATABRICKS_HOST") is None:
             self._log.info("Setting databricks host from context")
             os.environ["DATABRICKS_HOST"] = host or ensure_scheme(ctx.host)
         if os.getenv("DATABRICKS_TOKEN") is None:
             self._log.info("Setting databricks token from context")
             os.environ["DATABRICKS_TOKEN"] = token or ctx.token
+
+        if write_cfg is True and self._is_single_user_cluster():
+            expanded_file_path = os.path.expanduser("~/.databrickscfg")
+            with open(expanded_file_path, "w") as f:
+                f.write(f"[DEFAULT]\nhost = {os.getenv('DATABRICKS_HOST')}\ntoken = {os.getenv('DATABRICKS_TOKEN')}\n")
 
         return self
 
