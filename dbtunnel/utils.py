@@ -51,7 +51,7 @@ def ensure_python_path(env):
             env["PYTHONPATH"] = f"{py_path}:{site_packages}"
 
 
-def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True, shell=False):
+def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True, shell=False, trim_new_line=True):
     if ensure_python_site_packages:
         ensure_python_path(env)
     import subprocess
@@ -67,6 +67,8 @@ def execute(cmd: List[str], env, cwd=None, ensure_python_site_packages=True, she
                              bufsize=1)
     if popen.stdout is not None:
         for stdout_line in iter(popen.stdout.readline, ""):
+            if trim_new_line:
+                stdout_line = stdout_line.strip()
             yield stdout_line
 
     # if popen.stderr is not None:
