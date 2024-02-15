@@ -107,8 +107,9 @@ async def proxy_websocket(
 
     q_string = scope.get("query_string", None)
     # ensure query params its important for socketio during websocket upgrade
-    if q_string is not None and q_string.decode("utf-8") not in scope["path"].decode("utf-8"):
-        scope["path"] = scope["path"] + "?" + q_string
+    print(type(scope["path"]), type(q_string), scope)
+    if q_string is not None and q_string.decode("utf-8") not in scope["path"]:
+        scope["path"] = scope["path"] + "?" + q_string.decode("utf-8")
 
 
     client_ws: Optional[WebSocket] = None
