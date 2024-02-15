@@ -107,6 +107,8 @@ async def proxy_websocket(
         if scope.get("query_string") is not None:
             scope["path"] = scope["path"] + "?" + scope["query_string"].decode("utf-8")
 
+    print(scope)
+
     client_ws: Optional[WebSocket] = None
     upstream_ws: Optional[ClientWebSocketResponse] = None
     try:
