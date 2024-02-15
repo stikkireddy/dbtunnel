@@ -38,10 +38,8 @@ def get_cloud(context: Dict[str, Any]) -> str:
 
 def remove_lowest_subdomain_from_host(url):
     parsed_url = urlparse(url)
-    print(parsed_url)
     host = parsed_url.netloc if parsed_url.netloc else parsed_url.path
     parts = host.split('.')
-    print(parts)
     # Check if there are subdomains to remove
     if len(parts) > 2:
         # Remove the lowest subdomain
