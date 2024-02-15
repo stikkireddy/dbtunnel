@@ -229,7 +229,7 @@ class DbTunnel(abc.ABC):
     def share_to_internet(self,
                           *,
                           app_name: str,
-                          tunnel_host: str = None,
+                          tunnel_host: str = "proxy.dbtunnel.app",
                           tunnel_port: int = 7000,
                           subdomain: str = None,
                           private: bool = False):
