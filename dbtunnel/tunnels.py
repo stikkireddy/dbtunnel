@@ -255,7 +255,7 @@ class DbTunnel(abc.ABC):
                           tunnel_host: str = "proxy.dbtunnel.app",
                           tunnel_port: int = 7000,
                           subdomain: str = None,
-                          private: bool = False):
+                          sso: bool = False):
         self._share = True
         from dbtunnel.relay import DBTunnelRelayClient
         dbtunnel_relay_client = DBTunnelRelayClient(
@@ -264,7 +264,7 @@ class DbTunnel(abc.ABC):
             tunnel_port=tunnel_port,
             local_port=self._port,
             subdomain=subdomain,
-            private=private,
+            sso=sso,
             user=ctx.current_user_name
         )
         print("Downloading required binary if it does not exist!")
