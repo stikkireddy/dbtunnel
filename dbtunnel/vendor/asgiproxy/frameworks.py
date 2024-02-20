@@ -145,7 +145,7 @@ def _make_schorle_local_proxy_config(
     def _modify_root(content, root_path):
         list_of_uris = [b"/_schorle",]
         for uri in list_of_uris:
-            content = content.replace(uri, root_path.encode("utf-8") + uri)
+            content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
         return content
 
     modify_root = functools.partial(_modify_root, root_path=url_base_path)
