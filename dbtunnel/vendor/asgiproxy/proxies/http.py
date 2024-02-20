@@ -78,7 +78,7 @@ async def convert_proxy_response_to_user_response(
             status_code=status_to_client,
             headers=headers_to_client,  # type: ignore
         )
-    new_headers = headers_to_client
+    new_headers = {k: v for k, v in headers_to_client.items()}
     response_content = await proxy_response.read()
 
     # Forked code
@@ -89,11 +89,11 @@ async def convert_proxy_response_to_user_response(
                 # if path is .js it should be of type text/javascript;charset=utf-8
                 if fnmatch.fnmatch(scope["path"], path_pattern):
                     response_content = modify_func(response_content)
-                    new_headers = {k: v for k, v in headers_to_client.items()}
                     new_headers["Content-Length"] = str(len(response_content))
-                if scope["path"].endswith(".js"):
-                    # TODO: for schorle support
-                    new_headers["Content-Type"] = "text/javascript;charset=utf-8"
+
+            if scope["path"].endswith(".js"):
+                # TODO: for schorle support
+                new_headers["Content-Type"] = "text/javascript;charset=utf-8"
 
     return Response(
         content=response_content,
