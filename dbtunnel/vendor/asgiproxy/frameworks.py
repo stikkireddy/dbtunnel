@@ -134,14 +134,48 @@ def _make_gradio_local_proxy_config(
     return config
 
 
+def _make_schorle_local_proxy_config(
+        url_base_path,
+        service_host: str = "0.0.0.0",
+        service_port: int = 9989,
+        auth_config: dict = None
+):
+    auth_config = auth_config or {}
+
+    def _modify_root(content, root_path):
+        list_of_uris = [b"/_schorle",]
+        for uri in list_of_uris:
+            content = content.replace(uri, root_path.encode("utf-8") + uri)
+        return content
+
+    modify_root = functools.partial(_modify_root, root_path=url_base_path)
+
+    config = type(
+        "Config",
+        (BaseURLProxyConfigMixin, ProxyConfig),
+        {
+            "upstream_base_url": f"http://{service_host}:{service_port}",
+            "rewrite_host_header": f"{service_host}:{service_port}",
+            "modify_content": {
+                "/": modify_root,
+                # some reason gradio also has caps index bundled calling out explicitly
+            },
+            **auth_config,
+        },
+    )()
+    return config
+
+
 class Frameworks:
     STREAMLIT: str = "streamlit"
     GRADIO: str = "gradio"
     CHAINLIT: str = "chainlit"
+    SCHORLE: str = "schorle"
 
 
 framework_specific_proxy_config = {
     Frameworks.STREAMLIT: _make_streamlit_local_proxy_config,
     Frameworks.GRADIO: _make_gradio_local_proxy_config,
     Frameworks.CHAINLIT: _make_chainlit_local_proxy_config,
+    Frameworks.SCHORLE: _make_schorle_local_proxy_config,
 }
