@@ -80,5 +80,10 @@ class AppTunnels:
         from dbtunnel.shiny import ShinyPythonAppTunnel
         return ShinyPythonAppTunnel(app, port)
 
+    @staticmethod
+    def uvicorn(app, port: int = 8080):
+        from dbtunnel.uvicorn import UvicornAppTunnel
+        return UvicornAppTunnel(app, port)
+
 
 dbtunnel = AppTunnels()

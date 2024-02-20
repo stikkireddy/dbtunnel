@@ -25,6 +25,10 @@ setup(
             "fastapi",
             "uvicorn",
         ],
+        "uvicorn": [
+            # Specify dependencies for building documentation here
+            "uvicorn",
+        ],
         "streamlit": [
             # Specify dependencies for building documentation here
             "streamlit",
@@ -44,12 +48,12 @@ setup(
         "flask": [
             "flask",
             "fastapi",
-            "uvicorn", # no websockets
+            "uvicorn",  # no websockets
         ],
         "dash": [
             "dash",
             "fastapi",
-            "uvicorn", # no websockets
+            "uvicorn",  # no websockets
         ],
         "sql": [
             "databricks-sql-connector"
