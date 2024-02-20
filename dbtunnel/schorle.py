@@ -46,7 +46,6 @@ class SchorleAppTunnel(DbTunnel):
                 self._schorle_app,
                 host="0.0.0.0",
                 port=gradio_service_port,
-                root_path=self._proxy_settings.url_base_path.rstrip("/")
             )
             server = uvicorn.Server(config)
             await server.serve()
