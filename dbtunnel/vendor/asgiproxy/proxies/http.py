@@ -87,13 +87,13 @@ async def convert_proxy_response_to_user_response(
         if response_content is not None and len(response_content) > 0 and context.config.modify_content is not None:
             for path_pattern, modify_func in context.config.modify_content.items():
                 # if path is .js it should be of type text/javascript;charset=utf-8
-                if scope["path"].endswith(".js"):
-                    # TODO: for schorle support
-                    new_headers["Content-Type"] = "text/javascript;charset=utf-8"
                 if fnmatch.fnmatch(scope["path"], path_pattern):
                     response_content = modify_func(response_content)
                     new_headers = {k: v for k, v in headers_to_client.items()}
                     new_headers["Content-Length"] = str(len(response_content))
+                if scope["path"].endswith(".js"):
+                    # TODO: for schorle support
+                    new_headers["Content-Type"] = "text/javascript;charset=utf-8"
 
     return Response(
         content=response_content,
