@@ -140,7 +140,7 @@ You can pass custom environment variables from your notebook to any of the frame
 
 ```python
 from dbtunnel import dbtunnel
-dbtunnel.<framework>(<script_path>).inject_env({
+dbtunnel.<framework>(<script_path>).inject_env(**{
    "MY_CUSTOM_ENV": "my_custom_env_value"
 }).run()
 ```
@@ -149,12 +149,19 @@ For example:
 
 ```python
 from dbtunnel import dbtunnel
-dbtunnel.gradio(demo).inject_env({
+dbtunnel.gradio(demo).inject_env(**{
     "MY_CUSTOM_ENV": "my_custom_env_value"
 }).run()
 ```
 
-Keep in mind environment variables need to be strings!
+Alternatively
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.gradio(demo).inject_env(MY_CUSTOM_ENV="my_custom_env_value").run()
+```
+
+Keep in mind environment variables need to be keyword arguments!
 
 
 ## Exposing to internet using ngrok
