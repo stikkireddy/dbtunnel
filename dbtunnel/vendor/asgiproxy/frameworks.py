@@ -142,13 +142,19 @@ def _make_schorle_local_proxy_config(
 ):
     auth_config = auth_config or {}
 
-    def _modify_root(content, root_path):
+    def _modify_schorle_root(content, root_path):
         list_of_uris = [b"/_schorle",]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
         return content
 
-    modify_root = functools.partial(_modify_root, root_path=url_base_path)
+    # def _modify_bundle_js(content, root_path):
+    #     list_of_uris = [b"/_schorle",]
+    #     for uri in list_of_uris:
+    #         content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
+    #     return content
+
+    _modify_schorle_root = functools.partial(_modify_schorle_root, root_path=url_base_path)
 
     config = type(
         "Config",
@@ -157,7 +163,8 @@ def _make_schorle_local_proxy_config(
             "upstream_base_url": f"http://{service_host}:{service_port}",
             "rewrite_host_header": f"{service_host}:{service_port}",
             "modify_content": {
-                "/": modify_root,
+                "/": _modify_schorle_root,
+                "**/bundle.js": _modify_schorle_root,
                 # some reason gradio also has caps index bundled calling out explicitly
             },
             **auth_config,
