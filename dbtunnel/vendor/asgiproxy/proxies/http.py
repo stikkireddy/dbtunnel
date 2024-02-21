@@ -92,11 +92,6 @@ async def convert_proxy_response_to_user_response(
                     new_headers.popall("Content-Length", None)
                     new_headers["Content-Length"] = str(len(response_content))
 
-            if scope["path"].endswith(".js"):
-                # TODO: for schorle support
-                new_headers.popall("Content-Type", None)
-                new_headers["Content-Type"] = "text/javascript;charset=utf-8"
-
     return Response(
         content=response_content,
         status_code=status_to_client,
