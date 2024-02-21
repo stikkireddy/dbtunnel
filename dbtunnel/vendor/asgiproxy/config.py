@@ -8,7 +8,7 @@ from starlette.requests import Request
 from starlette.types import Scope
 from starlette.websockets import WebSocket
 
-Headerlike = Union[dict, Headers]
+Headerlike = MultiDict
 
 
 class ProxyConfig:

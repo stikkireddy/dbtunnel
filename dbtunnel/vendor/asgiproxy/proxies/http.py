@@ -89,12 +89,12 @@ async def convert_proxy_response_to_user_response(
                 # if path is .js it should be of type text/javascript;charset=utf-8
                 if fnmatch.fnmatch(scope["path"], path_pattern):
                     response_content = modify_func(response_content)
-                    new_headers.pop("Content-Length", None)
+                    new_headers.popall("Content-Length", None)
                     new_headers["Content-Length"] = str(len(response_content))
 
             if scope["path"].endswith(".js"):
                 # TODO: for schorle support
-                new_headers.pop("Content-Type", None)
+                new_headers.popall("Content-Type", None)
                 new_headers["Content-Type"] = "text/javascript;charset=utf-8"
 
     return Response(
