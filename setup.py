@@ -29,10 +29,6 @@ setup(
             # Specify dependencies for building documentation here
             "uvicorn",
         ],
-        "schorle": [
-            "schorle",
-            "uvicorn",
-        ],
         "streamlit": [
             # Specify dependencies for building documentation here
             "streamlit",

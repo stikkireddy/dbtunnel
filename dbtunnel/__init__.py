@@ -85,10 +85,5 @@ class AppTunnels:
         from dbtunnel.uvicorn import UvicornAppTunnel
         return UvicornAppTunnel(app, port)
 
-    @staticmethod
-    def schorle(app, port: int = 8080):
-        from dbtunnel.schorle import SchorleAppTunnel
-        return SchorleAppTunnel(app, port)
-
 
 dbtunnel = AppTunnels()

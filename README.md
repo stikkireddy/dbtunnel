@@ -94,8 +94,6 @@ support the access to request object to access headers, etc.
 * [ ] cloudflared
 * [x] dbtunnel custom relay (private only)
 
-
-
 ## Setup
 
 **Please do not use this in production!!**
@@ -104,6 +102,60 @@ support the access to request object to access headers, etc.
 2. Go to any of the examples to see how to use them
 3. Enjoy your proxy experience :-) 
 4. If you want to share the link ensure that the other user has permission to attach to your cluster.
+
+## Passing databricks auth to your app via `inject_auth`
+
+You can pass databricks user auth from your notebook session to any of the frameworks by doing the following:
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.<framework>(<script_path>).inject_auth().run()
+```
+
+For example: 
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.gradio(demo).inject_auth().run()
+```
+
+This exposes the user information via environment variable DATABRICKS_HOST and DATABRICKS_TOKEN.
+
+
+## Passing a warehouse to your app via `inject_sql_warehouse`
+
+You can pass databricks warehouse auth from your notebook session to any of the frameworks by doing the following:
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.<framework>(<script_path>).inject_sql_warehouse().run()
+```
+
+This exposes the warehouse information via environment variable DATABRICKS_HOST, DATABRICKS_TOKEN and DATABRICKS_HTTP_PATH.
+
+
+## Passing custom environment variables via `inject_env`
+
+You can pass custom environment variables from your notebook to any of the frameworks by doing the following:
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.<framework>(<script_path>).inject_env({
+   "MY_CUSTOM_ENV": "my_custom_env_value"
+}).run()
+```
+
+For example: 
+
+```python
+from dbtunnel import dbtunnel
+dbtunnel.gradio(demo).inject_env({
+    "MY_CUSTOM_ENV": "my_custom_env_value"
+}).run()
+```
+
+Keep in mind environment variables need to be strings!
+
 
 ## Exposing to internet using ngrok
 

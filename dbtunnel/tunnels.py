@@ -92,7 +92,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 Flavor = Literal[
     "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
-    "code-server", "chainlit", "shiny-python", "uvicorn", "schorle"]
+    "code-server", "chainlit", "shiny-python", "uvicorn"]
 
 
 def get_current_username() -> str:
@@ -158,6 +158,13 @@ class DbTunnel(abc.ABC):
         return self._share
 
     def inject_auth(self, host: str = None, token: str = None, write_cfg: bool = False):
+        """
+        Inject databricks host and token into the environment
+
+        :param host: any databricks url you may want to use, otherwise defaults to your notebook session host
+        :param token: any databricks token you may want to use, otherwise defaults to your notebook session token
+        :param write_cfg: this will create a .databrickscfg file in the root directory, only works on single user clusters.
+        """
         if os.getenv("DATABRICKS_HOST") is None:
             self._log.info("Setting databricks host from context")
             os.environ["DATABRICKS_HOST"] = host or ensure_scheme(ctx.host)
@@ -173,6 +180,13 @@ class DbTunnel(abc.ABC):
         return self
 
     def inject_sql_warehouse(self, http_path: str, server_hostname: str = None, token: str = None):
+        """
+        Inject databricks warehouse http path into the environment and auth
+        :param http_path: the http path to the warehouse
+        :param server_hostname: the hostname of the databricks workspace, defaults to the current workspace where the notebook is running
+        :param token: any databricks token you may want to use, otherwise defaults to your notebook session token
+        :return:
+        """
         if os.getenv("DATABRICKS_SERVER_HOSTNAME") is None:
             self._log.info("Setting databricks server hostname from context")
             os.environ["DATABRICKS_SERVER_HOSTNAME"] = server_hostname or extract_hostname(
@@ -189,6 +203,15 @@ class DbTunnel(abc.ABC):
         return self
 
     def inject_env(self, **kwargs):
+        """
+        Inject environment variables into the environment. Keep in mind environment variables are case sensitive
+
+        Example usage:
+        dbtunnel.chainlit("path/to/script").inject_env(ENV_VAR1="value1", ENV_VAR2="value2").run()
+
+        :param kwargs: keyword arguments for the environment variables you want to set
+        :return:
+        """
         for k, v in kwargs.items():
             if type(v) != str:
                 raise ValueError(f"Value for environment variable {k} must be a string")
@@ -197,6 +220,11 @@ class DbTunnel(abc.ABC):
         return self
 
     def with_token_auth(self):
+        """
+        Experimental feature do not use.
+        :return:
+        """
+
         self._basic_tunnel_auth["token_auth"] = True
         self._basic_tunnel_auth["token_auth_workspace_url"] = ctx.host
         return self

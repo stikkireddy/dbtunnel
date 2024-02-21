@@ -1,13 +1,14 @@
-from typing import Optional, Union, Iterable, Dict, Callable
+from typing import Optional, Iterable, Dict, Callable
 from urllib.parse import urljoin
 
 import aiohttp
+from multidict import MultiDict, CIMultiDict
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.types import Scope
 from starlette.websockets import WebSocket
 
-Headerlike = Union[dict, Headers]
+Headerlike = MultiDict
 
 
 class ProxyConfig:
@@ -48,7 +49,8 @@ class ProxyConfig:
         """
         Process upstream HTTP headers before they're passed to the client.
         """
-        return proxy_response.headers  # type: ignore
+        headers = CIMultiDict(proxy_response.headers)
+        return headers  # type: ignore
 
     def get_upstream_http_options(
             self, *, scope: Scope, client_request: Request, data
