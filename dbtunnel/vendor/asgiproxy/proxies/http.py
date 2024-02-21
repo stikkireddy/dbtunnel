@@ -78,7 +78,7 @@ async def convert_proxy_response_to_user_response(
             status_code=status_to_client,
             headers=headers_to_client,  # type: ignore
         )
-    new_headers = {k: v for k, v in headers_to_client.items()}
+    new_headers = headers_to_client
     response_content = await proxy_response.read()
 
     # Forked code
