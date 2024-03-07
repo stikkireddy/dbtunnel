@@ -280,7 +280,8 @@ class DbTunnel(abc.ABC):
     def share_to_internet(self,
                           *,
                           app_name: str,
-                          tunnel_host: str = "proxy.dbtunnel.app",
+                          tunnel_host: str,
+                          app_host: str,
                           tunnel_port: int = 7000,
                           subdomain: str = None,
                           sso: bool = False):
@@ -288,6 +289,7 @@ class DbTunnel(abc.ABC):
         from dbtunnel.relay import DBTunnelRelayClient
         dbtunnel_relay_client = DBTunnelRelayClient(
             app_name=app_name,
+            app_host=app_host,
             tunnel_host=tunnel_host,
             tunnel_port=tunnel_port,
             local_port=self._port,

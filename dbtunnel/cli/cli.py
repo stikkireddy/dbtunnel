@@ -144,7 +144,8 @@ def find_next_open_port(*, host="0.0.0.0", start_port: int = 9000, end_port: int
 
 @cli.command()
 @click.option("--headless", "-h", is_flag=True, show_default=True, default=False, help="Run without opening browser.")
-@click.option('--tunnel-host', '-th', type=str, default="proxy.dbtunnel.app", help='The domain of the dbtunnel server')
+@click.option('--tunnel-host', '-th', type=str, required=True,
+              help='The domain of the dbtunnel server')
 @click.option('--tunnel-port', '-tp', type=int, show_default=True,
               default=7000,
               help='The port of the dbtunnel server.')
@@ -208,7 +209,8 @@ def visit(**kwargs):
 @cli.command()
 @click.option("--headless", "-h", is_flag=True, show_default=True, default=False, help="Run without opening browser.")
 @click.option("--debug", is_flag=True, show_default=True, default=False, help="Enable debug mode.")
-@click.option('--tunnel-host', '-th', type=str, default="proxy.dbtunnel.app", help='The domain of the dbtunnel server')
+@click.option('--tunnel-host', '-th', type=str, required=True, help='The domain of the dbtunnel server')
+@click.option('--app-host', '-ah', type=str, required=True, help='The domain where the app is going to be served from')
 @click.option('--tunnel-port', '-tp', type=int, show_default=True,
               default=7000,
               help='The port of the dbtunnel server.')
@@ -238,6 +240,7 @@ def bind(**kwargs):
     app_name = kwargs.get('app_name')
     tunnel_host = kwargs.get('tunnel_host').replace("https://", "").replace("https://", "").replace("/", "")
     tunnel_port = kwargs.get('tunnel_port')
+    app_host = kwargs.get('app_host').replace("https://", "").replace("https://", "").replace("/", "")
     local_port = kwargs.get('local_port')
     local_host = kwargs.get('local_host')
     sso = kwargs.get('sso')
@@ -266,6 +269,7 @@ def bind(**kwargs):
             tunnel_host=tunnel_host,
             tunnel_port=tunnel_port,
             local_port=local_port,
+            app_host=app_host,
             subdomain=app_name,
             executable_path=str(frpc_native_executable_path),
             mode='ssh' if use_ssh_mode else 'native',
