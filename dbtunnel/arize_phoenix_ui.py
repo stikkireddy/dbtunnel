@@ -9,8 +9,8 @@ from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
 def get_arize_projects_url(url: str):
     if url.endswith("/"):
-        return f"{url}projects"
-    return f"{url}/projects"
+        return f"{url}projects/"
+    return f"{url}/projects/"
 
 
 class ArizePhoenixUITunnel(DbTunnel):
