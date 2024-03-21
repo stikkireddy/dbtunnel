@@ -85,5 +85,10 @@ class AppTunnels:
         from dbtunnel.uvicorn import UvicornAppTunnel
         return UvicornAppTunnel(app, port)
 
+    @staticmethod
+    def arize_phoenix(port: int = 9098):
+        from dbtunnel.arize_phoenix_ui import ArizePhoenixUITunnel
+        return ArizePhoenixUITunnel(port)
+
 
 dbtunnel = AppTunnels()

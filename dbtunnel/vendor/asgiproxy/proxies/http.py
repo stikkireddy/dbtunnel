@@ -91,6 +91,9 @@ async def convert_proxy_response_to_user_response(
                     response_content = modify_func(response_content)
                     new_headers.popall("Content-Length", None)
                     new_headers["Content-Length"] = str(len(response_content))
+                    # TODO: this may cause bugs :\ if we need multiple passes
+                    # TODO: in future maybe we have priority or flag
+                    break
 
     return Response(
         content=response_content,

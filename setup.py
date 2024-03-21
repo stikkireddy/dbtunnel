@@ -89,6 +89,9 @@ setup(
         "cli": [
             "click",
         ],
+        "arize-phoenix": [
+            "arize-phoenix"
+        ]
     },
     classifiers=[
         "Programming Language :: Python :: 3",

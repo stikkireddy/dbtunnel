@@ -92,7 +92,7 @@ def get_cloud_proxy_settings(cloud: str, org_id: str, cluster_id: str, port: int
 
 Flavor = Literal[
     "gradio", "fastapi", "nicegui", "streamlit", "stable-diffusion-ui", "bokeh", "flask", "dash", "solara",
-    "code-server", "chainlit", "shiny-python", "uvicorn"]
+    "code-server", "chainlit", "shiny-python", "uvicorn", "arize-phoenix"]
 
 
 def get_current_username() -> str:
