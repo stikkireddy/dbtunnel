@@ -54,10 +54,10 @@ class ArizePhoenixUITunnel(DbTunnel):
             self._log.info(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
 
         if self._share is False:
-            cmd = [sys.executable, "-m", "-f", "phoenix.server.main", "--port", f"{phoenix_service_port_no_share}",
+            cmd = [sys.executable, "-m", "phoenix.server.main", "--port", f"{phoenix_service_port_no_share}",
                    "serve"]
         else:
-            cmd = [sys.executable, "-m", "-f", "phoenix.server.main", "--port", f"{self._port}", "serve"]
+            cmd = [sys.executable, "-m", "phoenix.server.main", "--port", f"{self._port}", "serve"]
 
         self._log.info(f"Running command: {' '.join(cmd)}")
         for path in execute(cmd, my_env):
