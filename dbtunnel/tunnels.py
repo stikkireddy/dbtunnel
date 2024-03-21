@@ -157,6 +157,9 @@ class DbTunnel(abc.ABC):
     def shared(self):
         return self._share
 
+    def ui_url(self):
+        self._display_html(f'<a href="{self._proxy_settings.proxy_url}">Click to go to {self._flavor} App!</a>')
+
     def inject_auth(self, host: str = None, token: str = None, write_cfg: bool = False):
         """
         Inject databricks host and token into the environment

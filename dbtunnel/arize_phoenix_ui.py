@@ -7,11 +7,16 @@ from dbtunnel.utils import execute
 from dbtunnel.vendor.asgiproxy.frameworks import Frameworks
 
 
+def get_arize_projects_url(url: str):
+    if url.endswith("/"):
+        return f"{url}projects"
+    return f"{url}/projects"
+
+
 class ArizePhoenixUITunnel(DbTunnel):
 
     def __init__(self, port: int):
         super().__init__(port, "arize-phoenix")
-
 
     def _imports(self):
         try:
@@ -24,7 +29,13 @@ class ArizePhoenixUITunnel(DbTunnel):
 
     def _display_url(self):
         # must end with a "/" for it to not redirect
-        return f'<a href="{self._proxy_settings.proxy_url}">Click to go to {self._flavor} App!</a>'
+        return (f'<a href="{get_arize_projects_url(self._proxy_settings.proxy_url)}">Click to go to {self._flavor} '
+                f'App!</a>')
+
+    def ui_url(self):
+        self._display_html(f'<a href="{get_arize_projects_url(self._proxy_settings.proxy_url)}">'
+                           f'Click to go to {self._flavor} App!</a> '
+                           f'Use http://0.0.0.0:{self._port}/v1/traces for pushing arize traces.')
 
     def _run(self):
         self.display()
@@ -51,7 +62,8 @@ class ArizePhoenixUITunnel(DbTunnel):
         subprocess.run(f"kill -9 $(lsof -t -i:{self._port})", capture_output=True, shell=True)
 
         if self.shared is False:
-            self._log.info(f"Deploying stable diffusion web ui app at path: \n{self._proxy_settings.proxy_url}")
+            self._log.info(f"Deploying Arize Phoenix web ui app at path: "
+                           f"\n{get_arize_projects_url(self._proxy_settings.proxy_url)}")
 
         if self._share is False:
             cmd = [sys.executable, "-m", "phoenix.server.main", "--port", f"{phoenix_service_port_no_share}",
