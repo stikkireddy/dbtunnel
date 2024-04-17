@@ -38,12 +38,14 @@ def _make_chainlit_local_proxy_config(
             return content
 
     def _modify_js_bundle(content, root_path):
-        list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io", b"/logo", b"/readme"]
+        list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io", b"/logo", b"/readme", b"/login", b"/auth"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.encode("utf-8") + uri)
 
         content = content.replace(b'to:"/",', f'to:"{root_path}",'.encode("utf-8"))
         content = _modify_js_content_root_rewrite(content)
+        #
+        content = content.replace(b'callbackUrl:"/"', f'callbackUrl: "{root_path}"'.encode("utf-8"))
         return content
 
     def modify_css_bundle(content):
