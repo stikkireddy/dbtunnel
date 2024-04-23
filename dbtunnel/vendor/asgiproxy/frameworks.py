@@ -38,7 +38,15 @@ def _make_chainlit_local_proxy_config(
             return content
 
     def _modify_js_bundle(content, root_path):
-        list_of_uris = [b"/project/settings", b"/auth/config", b"/ws/socket.io", b"/logo", b"/readme", b"/login", b"/auth"]
+        list_of_uris = [
+            b"/feedback",
+            b"/project",
+            b"/auth/config",
+            b"/ws/socket.io",
+            b"/logo",
+            b"/readme",
+            b"/login",
+            b"/auth"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.encode("utf-8") + uri)
 
@@ -70,6 +78,7 @@ def _make_chainlit_local_proxy_config(
             "rewrite_host_header": f"{service_host}:{service_port}",
             "modify_content": {
                 "/": modify_root,
+                "/login": modify_root,
                 "": modify_root,
                 "*assets/index-*.js": modify_js_bundle,
                 "*settings": modify_settings,
@@ -177,6 +186,7 @@ def _make_arize_phoenix_local_proxy_config(
         },
     )()
     return config
+
 
 class Frameworks:
     STREAMLIT: str = "streamlit"
