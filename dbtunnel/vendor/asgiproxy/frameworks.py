@@ -38,6 +38,12 @@ def _make_chainlit_local_proxy_config(
             return content
 
     def _modify_js_bundle(content, root_path):
+
+        # fix for chainlit threads lookup and redirects
+        content = content.replace(b'`/thread/${d.id}`', f'`{root_path}thread/${{d.id}}`'.encode("utf-8"), 1)
+        content = content.replace(b'"/thread/:id?"', f'"{root_path}thread/:id?"'.encode("utf-8"), 1)
+        content = content.replace(b'"/element/:id"', f'"{root_path}element/:id"'.encode("utf-8"), 1)
+
         list_of_uris = [
             b"/feedback",
             b"/project",
