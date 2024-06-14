@@ -28,6 +28,9 @@ class RayAppTunnel(DbTunnel):
         from ray.serve.config import HTTPOptions
 
 
+        import nest_asyncio
+        nest_asyncio.apply()
+        
         # uvicorn.run(app, host="0.0.0.0", port=self._port)
         # Start the server
         async def start():
