@@ -36,8 +36,9 @@ class RayAppTunnel(DbTunnel):
         async def start():
             http_options: HTTPOptions = HTTPOptions(host="0.0.0.0", port=self._port)
             serve.start(http_options=http_options)
+            #https://adb-dp-984752964297111.11.azuredatabricks.net/driver-proxy/o/984752964297111/0502-204747-70x3cktp/8080/
             _: DeploymentHandle = (
-                serve.run(self._ray, route_prefix=self._proxy_settings.url_base_path.rstrip("/"), blocking=True)
+                serve.run(self._ray, route_prefix="/", blocking=True)
             )
         
 
