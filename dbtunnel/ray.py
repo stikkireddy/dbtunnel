@@ -37,7 +37,7 @@ class RayAppTunnel(DbTunnel):
             http_options: HTTPOptions = HTTPOptions(host="0.0.0.0", port=self._port)
             serve.start(http_options=http_options)
             _: DeploymentHandle = (
-                serve.run(self._ray, route_prefix=self._proxy_settings.url_base_path.rstrip("/"), is_blocking=True)
+                serve.run(self._ray, route_prefix=self._proxy_settings.url_base_path.rstrip("/"), blocking=True)
             )
         
 
