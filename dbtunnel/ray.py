@@ -24,20 +24,13 @@ class RayAppTunnel(DbTunnel):
         from ray import serve
         from ray.serve.config import HTTPOptions
 
-        import nest_asyncio
-        nest_asyncio.apply()
-
-        # uvicorn.run(app, host="0.0.0.0", port=self._port)
-        # Start the server
-        async def start():
+        def start():
             http_options: HTTPOptions = HTTPOptions(host="0.0.0.0", port=self._port)
             serve.start(http_options=http_options)
-            await serve.run(self._ray, route_prefix=self._proxy_settings.url_base_path.rstrip("/"))
+            serve.run(self._ray, route_prefix=self._proxy_settings.url_base_path.rstrip("/"))
 
-        # Run the asyncio event loop instead of uvloop to enable re entrance
-        import asyncio
         self._log.info(f"Use this link: \n{self._proxy_settings.proxy_url}")
-        asyncio.run(start())
+        start()
 
     def _display_url(self):
         # must end with a "/" for it to not redirect
