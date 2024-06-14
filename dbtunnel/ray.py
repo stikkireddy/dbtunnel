@@ -25,7 +25,7 @@ class RayAppTunnel(DbTunnel):
 
         from ray import serve
         from ray.serve.handle import DeploymentHandle
-        from ray.serve.config import HTTPOptions
+        from ray.serve.config import HTTPOptions, ProxyLocation
 
         import nest_asyncio
 
@@ -33,7 +33,8 @@ class RayAppTunnel(DbTunnel):
 
         async def start():
             http_options: HTTPOptions = HTTPOptions(host="0.0.0.0", port=self._port)
-            serve.start(http_options=http_options)
+            proxy_location: ProxyLocation = ProxyLocation(url_prefix=self._proxy_settings.url_base_path.rstrip("/"))
+            serve.start(http_options=http_options, proxy_location=proxy_location)
             _: DeploymentHandle = serve.run(self._ray, route_prefix="/", blocking=True)
 
         import asyncio
