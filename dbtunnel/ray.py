@@ -33,7 +33,7 @@ class RayAppTunnel(DbTunnel):
 
         async def start():
             http_options: HTTPOptions = HTTPOptions(host="0.0.0.0", port=self._port)
-            proxy_location: ProxyLocation = ProxyLocation(self._proxy_settings.url_base_path.rstrip("/"))
+            proxy_location: ProxyLocation = ProxyLocation(self._proxy_settings.proxy_url)
             serve.start(http_options=http_options, proxy_location=proxy_location)
             _: DeploymentHandle = serve.run(self._ray, route_prefix="/", blocking=True)
 
