@@ -95,7 +95,6 @@ setup(
         "ray": [
             "ray",
             "fastapi",
-            "pyngrok",
         ],
     },
     classifiers=[
