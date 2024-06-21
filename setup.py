@@ -91,7 +91,11 @@ setup(
         ],
         "arize-phoenix": [
             "arize-phoenix"
-        ]
+        ],
+        "ray": [
+            "ray",
+            "fastapi",
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -90,5 +90,10 @@ class AppTunnels:
         from dbtunnel.arize_phoenix_ui import ArizePhoenixUITunnel
         return ArizePhoenixUITunnel(port)
 
+    @staticmethod
+    def ray(app, port: int = 8080):
+        from dbtunnel.ray import RayAppTunnel
+        return RayAppTunnel(app, port)
+    
 
 dbtunnel = AppTunnels()
