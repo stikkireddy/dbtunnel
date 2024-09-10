@@ -124,8 +124,14 @@ def _make_gradio_local_proxy_config(
 ):
     auth_config = auth_config or {}
 
+    def _modify_root(content, root_path):
+        list_of_uris = [b"/assets"]
+        for uri in list_of_uris:
+            content = content.replace(uri, root_path.encode("utf-8") + uri)
+        return content
+
     def _modify_js_bundle(content, root_path):
-        list_of_uris = [b"/theme.css", b"/info", b"/queue", b"/assets"]
+        list_of_uris = [b"/theme.css", b"/info", b"/queue", b"/assets", b"/theme.css"]
         for uri in list_of_uris:
             content = content.replace(uri, root_path.rstrip("/").encode("utf-8") + uri)
 
@@ -133,6 +139,7 @@ def _make_gradio_local_proxy_config(
         return content
 
     modify_js_bundle = functools.partial(_modify_js_bundle, root_path=url_base_path)
+    modify_root = functools.partial(_modify_root, root_path=url_base_path)
 
     config = type(
         "Config",
@@ -141,6 +148,7 @@ def _make_gradio_local_proxy_config(
             "upstream_base_url": f"http://{service_host}:{service_port}",
             "rewrite_host_header": f"{service_host}:{service_port}",
             "modify_content": {
+                "/": modify_root,
                 "*assets/index-*.js": modify_js_bundle,
                 # some reason gradio also has caps index bundled calling out explicitly
                 "*assets/Index-*.js": modify_js_bundle,
