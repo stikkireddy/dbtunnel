@@ -21,9 +21,7 @@ class ProxyContext:
     @property
     def session(self) -> aiohttp.ClientSession:
         if not self._session:
-            self._session = aiohttp.ClientSession(
-                cookie_jar=aiohttp.DummyCookieJar(), auto_decompress=False
-            )
+            self._session = aiohttp.ClientSession(auto_decompress=False)
         return self._session
 
     async def __aenter__(self) -> "ProxyContext":
